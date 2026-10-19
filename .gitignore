@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+results/
+*.mp4
+*.trc
+*.mot
+*.c3d
+.pytest_cache/
+datasets/epfl_ski2dpose/*.zip

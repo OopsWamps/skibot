@@ -1,0 +1,52 @@
+"""Halpe-26 骨架布局契约：关键点索引、trc 别名、肢体链、conf 语义。
+
+全项目以 (frames, 26, 3) 的 [x, y, conf] 数组说话（trc_io.keypoints_halpe 产出）。
+conf 语义：trc 不含置信度，keypoints_halpe 把"点存在"记 1、缺失记 0 ——
+连续 0~1 值只出现在合成测试数据里；CONF_MIN 这类阈值在真实管线上恒为真，
+真正起作用的是 0/1 存在性。
+
+二期换 pose model（DECISIONS 5 的 body_with_feet 换代）时只改这个文件，
+trc 别名表一并在此核对补全。
+"""
+
+from __future__ import annotations
+
+# Halpe-26 关键点索引（Sports2D 默认 pose_model=body_with_feet）
+NOSE = 0
+L_EYE, R_EYE = 1, 2
+L_EAR, R_EAR = 3, 4
+L_SHOULDER, R_SHOULDER = 5, 6
+L_ELBOW, R_ELBOW = 7, 8
+L_WRIST, R_WRIST = 9, 10
+L_HIP, R_HIP = 11, 12
+L_KNEE, R_KNEE = 13, 14
+L_ANKLE, R_ANKLE = 15, 16
+
+# 参与角度计算的最低置信度门槛（view 与 metrics 共用）
+CONF_MIN = 0.3
+
+# 每侧肢体链：视角分类的置信度不对称信号按此取点
+L_LIMB = (L_SHOULDER, L_ELBOW, L_HIP, L_KNEE, L_ANKLE)
+R_LIMB = (R_SHOULDER, R_ELBOW, R_HIP, R_KNEE, R_ANKLE)
+
+# 矢状面指标按侧计算：选置信度高的一侧，取对应四点（肩髋膝踝）
+SIDE_JOINTS: dict[str, tuple[int, int, int, int]] = {
+    "left": (L_SHOULDER, L_HIP, L_KNEE, L_ANKLE),
+    "right": (R_SHOULDER, R_HIP, R_KNEE, R_ANKLE),
+}
+
+# Halpe-26 名字 → trc 里可能出现的写法。TODO_VALIDATE: 首次真视频运行时
+# 核对 Sports2D 实际输出的 marker 名并补全此映射。
+NAME_ALIASES: dict[int, tuple[str, ...]] = {
+    0: ("Nose", "Head_gesture", "nose"),
+    3: ("LEar", "L_Ear", "lear"),
+    4: ("REar", "R_Ear", "rear"),
+    5: ("LShoulder", "L_Shoulder", "lshoulder"),
+    6: ("RShoulder", "R_Shoulder", "rshoulder"),
+    11: ("LHip", "L_Hip", "lhip"),
+    12: ("RHip", "R_Hip", "rhip"),
+    13: ("LKnee", "L_Knee", "lknee"),
+    14: ("RKnee", "R_Knee", "rknee"),
+    15: ("LAnkle", "L_Ankle", "lankle"),
+    16: ("RAnkle", "R_Ankle", "rankle"),
+}

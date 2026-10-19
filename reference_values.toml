@@ -1,0 +1,71 @@
+# 五项指标的三档参考区间（单位：度）
+#
+# ⚠️ 本表全部是占位初值：从公开滑雪教学体系的定性描述转译的候选数值，
+#    尚未经专业确认。逐项确认之前，报告一律输出"参考值未校准"水印。
+# TODO(睿君): 逐项确认/修改以下数值，确认后删除本注释块。
+#
+# 角度约定（与 Sports2D 一致）：
+#   hip_flexion        肩-髋-膝夹角，直立 ≈180°，屈髋变小
+#   knee_flexion       髋-膝-踝夹角，直立 ≈180°，屈膝变小
+#   trunk_lean         躯干节段与竖直方向偏角，直立 ≈0°
+#   knee_valgus        髋-膝-踝夹角，腿直 ≈180°，内扣变小
+#   shoulder_hip_align 肩线与髋线夹角，对齐 ≈0°
+
+[hip_flexion.novice]
+range = [135, 165]
+verdict_low = "屈髋过度，重心过于靠后，检查是否坐姿滑行"
+verdict_high = "屈髋不足，躯干过直，想象胸前抱住一个圆球"
+verdict_ok = "屈髋幅度在参考区间内"
+
+[hip_flexion.intermediate]
+range = [140, 160]
+
+[hip_flexion.advanced]
+range = [140, 158]
+
+[knee_flexion.novice]
+range = [140, 170]
+verdict_low = "屈膝过深且不稳定，注意踝膝髋三关节联动"
+verdict_high = "膝盖太直，没有吸收地形冲击的余地，下压脚踝屈膝"
+verdict_ok = "膝关节弯曲在参考区间内"
+
+[knee_flexion.intermediate]
+range = [145, 165]
+
+[knee_flexion.advanced]
+range = [145, 162]
+
+[trunk_lean.novice]
+range = [5, 25]
+verdict_low = "躯干几乎垂直，重心偏后，小腿应迎向雪鞋前壁"
+verdict_high = "躯干前倾过多，弯腰代替了屈髋，回到髋部折叠"
+verdict_ok = "躯干前倾在参考区间内"
+
+[trunk_lean.intermediate]
+range = [8, 22]
+
+[trunk_lean.advanced]
+range = [10, 20]
+
+[knee_valgus.novice]
+range = [160, 180]
+verdict_low = "膝盖内扣，膝部承重力线偏移，双膝向雪板外侧撑开"
+verdict_high = "未检测到问题"
+verdict_ok = "膝关节力线在参考区间内"
+
+[knee_valgus.intermediate]
+range = [165, 180]
+
+[knee_valgus.advanced]
+range = [168, 180]
+
+[shoulder_hip_align.novice]
+range = [0, 20]
+verdict_high = "肩髋旋转错位大，上身与下身脱节，先转髋再带动肩"
+verdict_ok = "肩髋对齐在参考区间内"
+
+[shoulder_hip_align.intermediate]
+range = [0, 15]
+
+[shoulder_hip_align.advanced]
+range = [0, 12]

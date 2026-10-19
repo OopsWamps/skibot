@@ -1,0 +1,17 @@
+[project]
+name = "skibot"
+version = "0.1.0"
+description = "滑雪视频体态分析：视频进，关节角度与体态报告出"
+requires-python = ">=3.11"
+dependencies = [
+    "sports2d>=0.8.31",
+    "opencv-python>=4.8,<5",
+    "numpy>=1.24",
+]
+
+[project.scripts]
+skibot = "skibot.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

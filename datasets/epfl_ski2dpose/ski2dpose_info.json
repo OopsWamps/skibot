@@ -1,0 +1,1442 @@
+{
+  "5UHRvqx1iuQ": {
+    "video_info": {
+      "title": "Alpine skiing ladies slalom - 28th Winter Universiade 2017, Almaty, Kazakhstan",
+      "url": "https://www.youtube.com/watch?v=5UHRvqx1iuQ",
+      "type": "Slalom",
+      "location": "Almaty, Kazakhstan",
+      "weather": "Sunny"
+    },
+    "splits_info": {
+      "0": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:00:15.000",
+        "end_time_stamp": "00:00:35.801",
+        "delta_t": "00:00:20.801"
+      },
+      "1": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:00:35.809",
+        "end_time_stamp": "00:00:46.523",
+        "delta_t": "00:00:10.714"
+      },
+      "2": {
+        "front_view": false,
+        "side_view": false,
+        "back_view": true,
+        "start_time_stamp": "00:00:50.049",
+        "end_time_stamp": "00:00:50.757",
+        "delta_t": "00:00:00.708"
+      },
+      "3": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:00:50.837",
+        "end_time_stamp": "00:01:06.989",
+        "delta_t": "00:00:16.152"
+      },
+      "4": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:01:07.088",
+        "end_time_stamp": "00:01:12.576",
+        "delta_t": "00:00:05.488"
+      },
+      "5": {
+        "front_view": false,
+        "side_view": false,
+        "back_view": true,
+        "start_time_stamp": "00:01:16.516",
+        "end_time_stamp": "00:01:17.357",
+        "delta_t": "00:00:00.841"
+      },
+      "6": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:17.473",
+        "end_time_stamp": "00:01:34.122",
+        "delta_t": "00:00:16.649"
+      },
+      "7": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:01:34.563",
+        "end_time_stamp": "00:01:41.394",
+        "delta_t": "00:00:06.831"
+      },
+      "8": {
+        "front_view": false,
+        "side_view": false,
+        "back_view": true,
+        "start_time_stamp": "00:01:45.351",
+        "end_time_stamp": "00:01:46.070",
+        "delta_t": "00:00:00.719"
+      },
+      "9": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:46.196",
+        "end_time_stamp": "00:02:02.719",
+        "delta_t": "00:00:16.523"
+      },
+      "10": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:02:02.927",
+        "end_time_stamp": "00:02:09.668",
+        "delta_t": "00:00:06.741"
+      }
+    }
+  },
+  "qxfgw1Kd98A": {
+    "video_info": {
+      "title": "Alpine Skiing Men Slalom final - 27th Winter Universiade, Granada, Spain",
+      "url": "https://www.youtube.com/watch?v=qxfgw1Kd98A",
+      "type": "Slalom",
+      "location": "Granada, Spain",
+      "weather": "Foggy, Sunny"
+    },
+    "splits_info": {
+      "0": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:01:06.586",
+        "end_time_stamp": "00:01:07.870",
+        "delta_t": "00:00:01.284"
+      },
+      "1": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:01:07.908",
+        "end_time_stamp": "00:01:12.132",
+        "delta_t": "00:00:04.224"
+      },
+      "2": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:01:13.259",
+        "end_time_stamp": "00:01:18.183",
+        "delta_t": "00:00:04.924"
+      },
+      "3": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:18.461",
+        "end_time_stamp": "00:01:29.381",
+        "delta_t": "00:00:10.920"
+      },
+      "4": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:01:29.594",
+        "end_time_stamp": "00:01:32.934",
+        "delta_t": "00:00:03.340"
+      },
+      "5": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:39.605",
+        "end_time_stamp": "00:01:40.135",
+        "delta_t": "00:00:00.530"
+      },
+      "6": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:01:40.181",
+        "end_time_stamp": "00:01:46.811",
+        "delta_t": "00:00:06.630"
+      },
+      "7": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:48.225",
+        "end_time_stamp": "00:01:54.330",
+        "delta_t": "00:00:06.105"
+      },
+      "8": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:01:55.506",
+        "end_time_stamp": "00:01:59.423",
+        "delta_t": "00:00:03.917"
+      },
+      "9": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:02:05.382",
+        "end_time_stamp": "00:02:05.815",
+        "delta_t": "00:00:00.433"
+      },
+      "10": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:02:06.374",
+        "end_time_stamp": "00:02:09.213",
+        "delta_t": "00:00:02.839"
+      },
+      "11": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:02:16.774",
+        "end_time_stamp": "00:02:19.290",
+        "delta_t": "00:00:02.516"
+      },
+      "12": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:02:19.773",
+        "end_time_stamp": "00:02:23.075",
+        "delta_t": "00:00:03.302"
+      },
+      "13": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:24.168",
+        "end_time_stamp": "00:02:28.323",
+        "delta_t": "00:00:04.155"
+      },
+      "14": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:02:28.874",
+        "end_time_stamp": "00:02:33.202",
+        "delta_t": "00:00:04.328"
+      },
+      "15": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:02:36.398",
+        "end_time_stamp": "00:02:38.796",
+        "delta_t": "00:00:02.398"
+      },
+      "16": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:02:47.957",
+        "end_time_stamp": "00:02:50.245",
+        "delta_t": "00:00:02.288"
+      },
+      "17": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:02:50.359",
+        "end_time_stamp": "00:02:54.525",
+        "delta_t": "00:00:04.166"
+      },
+      "18": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:02:54.639",
+        "end_time_stamp": "00:02:59.883",
+        "delta_t": "00:00:05.244"
+      },
+      "19": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:03:00.311",
+        "end_time_stamp": "00:03:03.925",
+        "delta_t": "00:00:03.614"
+      },
+      "20": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:03:08.401",
+        "end_time_stamp": "00:03:13.640",
+        "delta_t": "00:00:05.239"
+      }
+    }
+  },
+  "uLW74013Wp0": {
+    "video_info": {
+      "title": "Alpine Skiing Ladie's Giant Slalom - 28th Winter Universiade 2017, Almaty, Kazakhstan",
+      "url": "https://www.youtube.com/watch?v=uLW74013Wp0",
+      "type": "Giant Slalom",
+      "location": "Almaty, Kazakhstan",
+      "weather": "Overcast"
+    },
+    "splits_info": {
+      "0": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:00:22.451",
+        "end_time_stamp": "00:00:26.701",
+        "delta_t": "00:00:04.250"
+      },
+      "1": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:00:27.426",
+        "end_time_stamp": "00:00:30.623",
+        "delta_t": "00:00:03.197"
+      },
+      "2": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:00:30.699",
+        "end_time_stamp": "00:00:44.900",
+        "delta_t": "00:00:14.201"
+      },
+      "3": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:00:46.468",
+        "end_time_stamp": "00:00:50.660",
+        "delta_t": "00:00:04.192"
+      },
+      "4": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:00:50.728",
+        "end_time_stamp": "00:01:03.894",
+        "delta_t": "00:00:13.166"
+      },
+      "5": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:07.604",
+        "end_time_stamp": "00:01:12.048",
+        "delta_t": "00:00:04.444"
+      },
+      "6": {
+        "front_view": false,
+        "side_view": false,
+        "back_view": true,
+        "start_time_stamp": "00:01:12.287",
+        "end_time_stamp": "00:01:13.779",
+        "delta_t": "00:00:01.492"
+      },
+      "7": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:01:13.864",
+        "end_time_stamp": "00:01:17.335",
+        "delta_t": "00:00:03.471"
+      },
+      "8": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:01:18.735",
+        "end_time_stamp": "00:01:28.932",
+        "delta_t": "00:00:10.197"
+      },
+      "9": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:01:32.857",
+        "end_time_stamp": "00:01:35.048",
+        "delta_t": "00:00:02.191"
+      },
+      "10": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:35.451",
+        "end_time_stamp": "00:01:39.055",
+        "delta_t": "00:00:03.604"
+      },
+      "11": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:01:39.226",
+        "end_time_stamp": "00:01:43.866",
+        "delta_t": "00:00:04.640"
+      },
+      "12": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:44.046",
+        "end_time_stamp": "00:01:57.321",
+        "delta_t": "00:00:13.275"
+      },
+      "13": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:03.900",
+        "end_time_stamp": "00:02:09.063",
+        "delta_t": "00:00:05.163"
+      },
+      "14": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:09.146",
+        "end_time_stamp": "00:02:19.460",
+        "delta_t": "00:00:10.314"
+      },
+      "15": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:19.608",
+        "end_time_stamp": "00:02:26.338",
+        "delta_t": "00:00:06.730"
+      },
+      "16": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:02:27.223",
+        "end_time_stamp": "00:02:33.229",
+        "delta_t": "00:00:06.006"
+      },
+      "17": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:33.367",
+        "end_time_stamp": "00:02:47.386",
+        "delta_t": "00:00:14.019"
+      },
+      "18": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:50.501",
+        "end_time_stamp": "00:02:55.424",
+        "delta_t": "00:00:04.923"
+      },
+      "19": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:55.837",
+        "end_time_stamp": "00:03:04.786",
+        "delta_t": "00:00:08.949"
+      },
+      "20": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:03:04.861",
+        "end_time_stamp": "00:03:09.854",
+        "delta_t": "00:00:04.993"
+      },
+      "21": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:03:09.929",
+        "end_time_stamp": "00:03:24.292",
+        "delta_t": "00:00:14.363"
+      }
+    }
+  },
+  "oKQFABiOTw8": {
+    "video_info": {
+      "title": "Alpine Skiing Men's Giant Slalom - 28th Winter Universiade 2017, Almaty, Kazakhstan",
+      "url": "https://www.youtube.com/watch?v=oKQFABiOTw8",
+      "type": "Giant Slalom",
+      "location": "Almaty, Kazakhstan",
+      "weather": "Foggy, Sunny"
+    },
+    "splits_info": {
+      "0": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:00:20.527",
+        "end_time_stamp": "00:00:21.106",
+        "delta_t": "00:00:00.579"
+      },
+      "1": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:00:22.101",
+        "end_time_stamp": "00:00:25.028",
+        "delta_t": "00:00:02.927"
+      },
+      "2": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:00:25.100",
+        "end_time_stamp": "00:00:29.216",
+        "delta_t": "00:00:04.116"
+      },
+      "3": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:00:29.397",
+        "end_time_stamp": "00:00:42.651",
+        "delta_t": "00:00:13.254"
+      },
+      "4": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:00:45.654",
+        "end_time_stamp": "00:00:47.093",
+        "delta_t": "00:00:01.439"
+      },
+      "5": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:00:47.891",
+        "end_time_stamp": "00:00:52.428",
+        "delta_t": "00:00:04.537"
+      },
+      "6": {
+        "front_view": false,
+        "side_view": false,
+        "back_view": true,
+        "start_time_stamp": "00:00:52.499",
+        "end_time_stamp": "00:00:56.343",
+        "delta_t": "00:00:03.844"
+      },
+      "7": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:00:56.423",
+        "end_time_stamp": "00:01:07.263",
+        "delta_t": "00:00:10.840"
+      },
+      "8": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:07.369",
+        "end_time_stamp": "00:01:07.989",
+        "delta_t": "00:00:00.620"
+      },
+      "9": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:01:18.013",
+        "end_time_stamp": "00:01:22.939",
+        "delta_t": "00:00:04.926"
+      },
+      "10": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:23.016",
+        "end_time_stamp": "00:01:35.102",
+        "delta_t": "00:00:12.086"
+      },
+      "11": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:00.986",
+        "end_time_stamp": "00:02:07.107",
+        "delta_t": "00:00:06.121"
+      },
+      "12": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:02:07.180",
+        "end_time_stamp": "00:02:09.051",
+        "delta_t": "00:00:01.871"
+      },
+      "13": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:09.134",
+        "end_time_stamp": "00:02:11.214",
+        "delta_t": "00:00:02.080"
+      },
+      "14": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:11.367",
+        "end_time_stamp": "00:02:12.099",
+        "delta_t": "00:00:00.732"
+      },
+      "15": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:02:15.295",
+        "end_time_stamp": "00:02:30.986",
+        "delta_t": "00:00:15.691"
+      },
+      "16": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:02:31.069",
+        "end_time_stamp": "00:02:31.619",
+        "delta_t": "00:00:00.550"
+      },
+      "17": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:02:31.692",
+        "end_time_stamp": "00:02:38.094",
+        "delta_t": "00:00:06.402"
+      },
+      "18": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:02:38.145",
+        "end_time_stamp": "00:02:50.423",
+        "delta_t": "00:00:12.278"
+      },
+      "19": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:02:56.342",
+        "end_time_stamp": "00:03:02.744",
+        "delta_t": "00:00:06.402"
+      },
+      "20": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:03:02.889",
+        "end_time_stamp": "00:03:05.103",
+        "delta_t": "00:00:02.214"
+      },
+      "21": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:03:05.173",
+        "end_time_stamp": "00:03:13.898",
+        "delta_t": "00:00:08.725"
+      },
+      "22": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:03:15.627",
+        "end_time_stamp": "00:03:30.970",
+        "delta_t": "00:00:15.343"
+      },
+      "23": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:03:31.062",
+        "end_time_stamp": "00:03:36.828",
+        "delta_t": "00:00:05.766"
+      },
+      "24": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:03:37.052",
+        "end_time_stamp": "00:03:50.855",
+        "delta_t": "00:00:13.803"
+      },
+      "25": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:03:54.097",
+        "end_time_stamp": "00:04:00.742",
+        "delta_t": "00:00:06.645"
+      },
+      "26": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:04:00.813",
+        "end_time_stamp": "00:04:05.502",
+        "delta_t": "00:00:04.689"
+      },
+      "27": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:04:06.222",
+        "end_time_stamp": "00:04:20.947",
+        "delta_t": "00:00:14.725"
+      },
+      "28": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:04:21.305",
+        "end_time_stamp": "00:04:27.374",
+        "delta_t": "00:00:06.069"
+      },
+      "29": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:04:27.455",
+        "end_time_stamp": "00:04:40.653",
+        "delta_t": "00:00:13.198"
+      }
+    }
+  },
+  "zW1bF2PsB0M": {
+    "video_info": {
+      "title": "Alpine Skiing Men's Super G - 28th Winter Universiade 2017, Almaty, Kazakhstan",
+      "url": "https://www.youtube.com/watch?v=zW1bF2PsB0M",
+      "type": "Super G",
+      "location": "Almaty, Kazakhstan",
+      "weather": "Sunny, Shadows"
+    },
+    "splits_info": {
+      "0": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:00:56.871",
+        "end_time_stamp": "00:01:06.319",
+        "delta_t": "00:00:09.448"
+      },
+      "1": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:07.003",
+        "end_time_stamp": "00:01:11.404",
+        "delta_t": "00:00:04.401"
+      },
+      "2": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:11.549",
+        "end_time_stamp": "00:01:18.795",
+        "delta_t": "00:00:07.246"
+      },
+      "3": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:19.345",
+        "end_time_stamp": "00:01:26.245",
+        "delta_t": "00:00:06.900"
+      },
+      "4": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:01:26.565",
+        "end_time_stamp": "00:01:32.229",
+        "delta_t": "00:00:05.664"
+      },
+      "5": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:32.510",
+        "end_time_stamp": "00:01:44.757",
+        "delta_t": "00:00:12.247"
+      },
+      "6": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:01:44.866",
+        "end_time_stamp": "00:01:50.126",
+        "delta_t": "00:00:05.260"
+      },
+      "7": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:01:50.408",
+        "end_time_stamp": "00:01:54.708",
+        "delta_t": "00:00:04.300"
+      },
+      "8": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:55.089",
+        "end_time_stamp": "00:02:02.915",
+        "delta_t": "00:00:07.826"
+      },
+      "9": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:26.410",
+        "end_time_stamp": "00:02:29.006",
+        "delta_t": "00:00:02.596"
+      },
+      "10": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:29.046",
+        "end_time_stamp": "00:02:32.389",
+        "delta_t": "00:00:03.343"
+      },
+      "11": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:02:32.698",
+        "end_time_stamp": "00:02:39.874",
+        "delta_t": "00:00:07.176"
+      },
+      "12": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:40.109",
+        "end_time_stamp": "00:02:48.714",
+        "delta_t": "00:00:08.605"
+      },
+      "13": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:02:49.026",
+        "end_time_stamp": "00:02:53.992",
+        "delta_t": "00:00:04.966"
+      },
+      "14": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:54.263",
+        "end_time_stamp": "00:03:05.834",
+        "delta_t": "00:00:11.571"
+      },
+      "15": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:03:06.428",
+        "end_time_stamp": "00:03:11.191",
+        "delta_t": "00:00:04.763"
+      },
+      "16": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:03:11.518",
+        "end_time_stamp": "00:03:15.508",
+        "delta_t": "00:00:03.990"
+      },
+      "17": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:03:16.311",
+        "end_time_stamp": "00:03:24.600",
+        "delta_t": "00:00:08.289"
+      }
+    }
+  },
+  "37HtpPpdvp0": {
+    "video_info": {
+      "title": "Mikaela Shiffrin SL @ LSC 2-6-16",
+      "url": "https://www.youtube.com/watch?v=37HtpPpdvp0",
+      "type": "Follow Cam",
+      "location": "Training",
+      "weather": "Sunny"
+    },
+    "splits_info": {
+      "0": {
+        "front_view": false,
+        "side_view": false,
+        "back_view": true,
+        "start_time_stamp": "00:00:06.664",
+        "end_time_stamp": "00:00:40.077",
+        "delta_t": "00:00:33.413"
+      }
+    }
+  },
+  "3wkVqupcMAk": {
+    "video_info": {
+      "title": "Adeline Baud Mugnier GS @ LSC 11-22-2015",
+      "url": "https://www.youtube.com/watch?v=3wkVqupcMAk",
+      "type": "Follow Cam",
+      "location": "Training",
+      "weather": "Sunny"
+    },
+    "splits_info": {
+      "0": {
+        "front_view": false,
+        "side_view": false,
+        "back_view": true,
+        "start_time_stamp": "00:00:01.934",
+        "end_time_stamp": "00:00:38.173",
+        "delta_t": "00:00:36.239"
+      }
+    }
+  },
+  "FW1S3VAKui8": {
+    "video_info": {
+      "title": "Alex Leever SL @ LSC 1-30-16",
+      "url": "https://www.youtube.com/watch?v=FW1S3VAKui8",
+      "type": "Follow Cam",
+      "location": "Training",
+      "weather": "Sunny, Shadows"
+    },
+    "splits_info": {
+      "0": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:00:02.146",
+        "end_time_stamp": "00:00:31.475",
+        "delta_t": "00:00:29.329"
+      }
+    }
+  },
+  "LjXeTB3Wl10": {
+    "video_info": {
+      "title": "Tanner Farrow GS @ LSC 5-25-16",
+      "url": "https://www.youtube.com/watch?v=LjXeTB3Wl10",
+      "type": "Follow Cam",
+      "location": "Training",
+      "weather": "Sunny"
+    },
+    "splits_info": {
+      "0": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:00:06.401",
+        "end_time_stamp": "00:00:50.243",
+        "delta_t": "00:00:43.842"
+      }
+    }
+  },
+  "NrWcP1s3QC0": {
+    "video_info": {
+      "title": "NSS July 2011",
+      "url": "https://www.youtube.com/watch?v=NrWcP1s3QC0",
+      "type": "Mixed",
+      "location": "Snowplanet",
+      "weather": "Indoors"
+    },
+    "splits_info": {
+      "0": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:00:06.220",
+        "end_time_stamp": "00:00:08.457",
+        "delta_t": "00:00:02.237"
+      },
+      "1": {
+        "front_view": false,
+        "side_view": false,
+        "back_view": true,
+        "start_time_stamp": "00:00:08.611",
+        "end_time_stamp": "00:00:09.860",
+        "delta_t": "00:00:01.249"
+      },
+      "2": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:00:11.261",
+        "end_time_stamp": "00:00:13.175",
+        "delta_t": "00:00:01.914"
+      },
+      "3": {
+        "front_view": false,
+        "side_view": false,
+        "back_view": true,
+        "start_time_stamp": "00:00:15.260",
+        "end_time_stamp": "00:00:15.848",
+        "delta_t": "00:00:00.588"
+      },
+      "4": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:00:16.188",
+        "end_time_stamp": "00:00:17.773",
+        "delta_t": "00:00:01.585"
+      },
+      "5": {
+        "front_view": false,
+        "side_view": false,
+        "back_view": true,
+        "start_time_stamp": "00:00:19.383",
+        "end_time_stamp": "00:00:21.025",
+        "delta_t": "00:00:01.642"
+      },
+      "6": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:00:21.524",
+        "end_time_stamp": "00:00:23.068",
+        "delta_t": "00:00:01.544"
+      },
+      "7": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:00:24.135",
+        "end_time_stamp": "00:00:25.942",
+        "delta_t": "00:00:01.807"
+      },
+      "8": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:00:26.550",
+        "end_time_stamp": "00:00:27.909",
+        "delta_t": "00:00:01.359"
+      },
+      "9": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:00:29.053",
+        "end_time_stamp": "00:00:30.939",
+        "delta_t": "00:00:01.886"
+      },
+      "10": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:00:32.869",
+        "end_time_stamp": "00:00:33.738",
+        "delta_t": "00:00:00.869"
+      },
+      "11": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:00:42.619",
+        "end_time_stamp": "00:00:45.337",
+        "delta_t": "00:00:02.718"
+      },
+      "12": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:00:45.534",
+        "end_time_stamp": "00:00:47.532",
+        "delta_t": "00:00:01.998"
+      },
+      "13": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:00:48.582",
+        "end_time_stamp": "00:00:53.341",
+        "delta_t": "00:00:04.759"
+      },
+      "14": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:00:55.221",
+        "end_time_stamp": "00:00:55.905",
+        "delta_t": "00:00:00.684"
+      },
+      "15": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:01:01.508",
+        "end_time_stamp": "00:01:03.537",
+        "delta_t": "00:00:02.029"
+      },
+      "16": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:01:04.139",
+        "end_time_stamp": "00:01:06.183",
+        "delta_t": "00:00:02.044"
+      },
+      "17": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:01:06.662",
+        "end_time_stamp": "00:01:08.542",
+        "delta_t": "00:00:01.880"
+      }
+    }
+  },
+  "OeDt6D_9Rh4": {
+    "video_info": {
+      "title": "Anemone Marmottan GS @ LSC 11-23-2015",
+      "url": "https://www.youtube.com/watch?v=OeDt6D_9Rh4",
+      "type": "Follow Cam",
+      "location": "Training",
+      "weather": "Sunny"
+    },
+    "splits_info": {
+      "0": {
+        "front_view": false,
+        "side_view": false,
+        "back_view": true,
+        "start_time_stamp": "00:00:00.006",
+        "end_time_stamp": "00:00:36.802",
+        "delta_t": "00:00:36.796"
+      }
+    }
+  },
+  "SVYdH614G_M": {
+    "video_info": {
+      "title": "Alpine Skiing Women's Super G Final - Winter Universiade Trentino 2013",
+      "url": "https://www.youtube.com/watch?v=SVYdH614G_M",
+      "type": "Super G",
+      "location": "Trentino, Italy",
+      "weather": "Sunny"
+    },
+    "splits_info": {
+      "0": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:00:38.617",
+        "end_time_stamp": "00:00:41.816",
+        "delta_t": "00:00:03.199"
+      },
+      "1": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:00:56.931",
+        "end_time_stamp": "00:01:03.258",
+        "delta_t": "00:00:06.327"
+      },
+      "2": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:12.216",
+        "end_time_stamp": "00:01:19.860",
+        "delta_t": "00:00:07.644"
+      },
+      "3": {
+        "front_view": false,
+        "side_view": false,
+        "back_view": true,
+        "start_time_stamp": "00:01:23.931",
+        "end_time_stamp": "00:01:27.620",
+        "delta_t": "00:00:03.689"
+      },
+      "4": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:43.693",
+        "end_time_stamp": "00:01:50.993",
+        "delta_t": "00:00:07.300"
+      },
+      "5": {
+        "front_view": false,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:02:02.901",
+        "end_time_stamp": "00:02:05.929",
+        "delta_t": "00:00:03.028"
+      },
+      "6": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:22.369",
+        "end_time_stamp": "00:02:29.445",
+        "delta_t": "00:00:07.076"
+      },
+      "7": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:53.023",
+        "end_time_stamp": "00:03:01.298",
+        "delta_t": "00:00:08.275"
+      }
+    }
+  },
+  "dpFlXMvvZ9E": {
+    "video_info": {
+      "title": "Alpine Skiing Downhill Women - Winter Universiade Trentino 2013",
+      "url": "https://www.youtube.com/watch?v=dpFlXMvvZ9E",
+      "type": "Downhill",
+      "location": "Trentino, Italy",
+      "weather": "Sunny"
+    },
+    "splits_info": {
+      "0": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:10.247",
+        "end_time_stamp": "00:01:15.573",
+        "delta_t": "00:00:05.326"
+      },
+      "1": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:01:47.096",
+        "end_time_stamp": "00:01:51.465",
+        "delta_t": "00:00:04.369"
+      },
+      "2": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:25.559",
+        "end_time_stamp": "00:02:30.820",
+        "delta_t": "00:00:05.261"
+      }
+    }
+  },
+  "he3w2n9WvrI": {
+    "video_info": {
+      "title": "Alpine Skiing Ladie's Combined Slalom - 28th Winter Universiade 2017, Almaty, Kazakhstan",
+      "url": "https://www.youtube.com/watch?v=he3w2n9WvrI",
+      "type": "Combined Slalom",
+      "location": "Almaty, Kazakhstan",
+      "weather": "Overcast"
+    },
+    "splits_info": {
+      "0": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:01:17.196",
+        "end_time_stamp": "00:01:22.987",
+        "delta_t": "00:00:05.791"
+      },
+      "1": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:23.412",
+        "end_time_stamp": "00:01:27.935",
+        "delta_t": "00:00:04.523"
+      },
+      "2": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:01:28.222",
+        "end_time_stamp": "00:01:39.255",
+        "delta_t": "00:00:11.033"
+      },
+      "3": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:39.382",
+        "end_time_stamp": "00:01:47.581",
+        "delta_t": "00:00:08.199"
+      },
+      "4": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:01:47.726",
+        "end_time_stamp": "00:01:54.307",
+        "delta_t": "00:00:06.581"
+      },
+      "5": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:01:54.387",
+        "end_time_stamp": "00:02:03.692",
+        "delta_t": "00:00:09.305"
+      },
+      "6": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:02:16.817",
+        "end_time_stamp": "00:02:22.897",
+        "delta_t": "00:00:06.080"
+      },
+      "7": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:23.493",
+        "end_time_stamp": "00:02:27.587",
+        "delta_t": "00:00:04.094"
+      },
+      "8": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:02:27.660",
+        "end_time_stamp": "00:02:38.212",
+        "delta_t": "00:00:10.552"
+      },
+      "9": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:02:38.546",
+        "end_time_stamp": "00:02:46.509",
+        "delta_t": "00:00:07.963"
+      },
+      "10": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:02:47.027",
+        "end_time_stamp": "00:02:53.183",
+        "delta_t": "00:00:06.156"
+      },
+      "11": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:02:53.450",
+        "end_time_stamp": "00:03:03.332",
+        "delta_t": "00:00:09.882"
+      },
+      "12": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:03:15.688",
+        "end_time_stamp": "00:03:22.701",
+        "delta_t": "00:00:07.013"
+      },
+      "13": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:03:23.174",
+        "end_time_stamp": "00:03:28.380",
+        "delta_t": "00:00:05.206"
+      },
+      "14": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:03:28.915",
+        "end_time_stamp": "00:03:40.333",
+        "delta_t": "00:00:11.418"
+      },
+      "15": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:03:40.505",
+        "end_time_stamp": "00:03:49.064",
+        "delta_t": "00:00:08.559"
+      },
+      "16": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": true,
+        "start_time_stamp": "00:03:49.389",
+        "end_time_stamp": "00:03:55.540",
+        "delta_t": "00:00:06.151"
+      },
+      "17": {
+        "front_view": true,
+        "side_view": false,
+        "back_view": false,
+        "start_time_stamp": "00:03:55.738",
+        "end_time_stamp": "00:04:04.568",
+        "delta_t": "00:00:08.830"
+      }
+    }
+  },
+  "nq2qj0fhYjc": {
+    "video_info": {
+      "title": "Wada SL @ LSC 1-23-16",
+      "url": "https://www.youtube.com/watch?v=nq2qj0fhYjc",
+      "type": "Follow Cam",
+      "location": "Training",
+      "weather": "Sunny"
+    },
+    "splits_info": {
+      "0": {
+        "front_view": false,
+        "side_view": false,
+        "back_view": true,
+        "start_time_stamp": "00:00:00.005",
+        "end_time_stamp": "00:00:15.412",
+        "delta_t": "00:00:15.407"
+      }
+    }
+  },
+  "v7PADD2_I00": {
+    "video_info": {
+      "title": "Alpine Skiing DownhillL Men's Final - Winter Universiade Trentino 2013",
+      "url": "https://www.youtube.com/watch?v=v7PADD2_I00",
+      "type": "Downhill",
+      "location": "Trentino, Italy",
+      "weather": "Sunny"
+    },
+    "splits_info": {
+      "0": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:00:30.982",
+        "end_time_stamp": "00:00:36.049",
+        "delta_t": "00:00:05.067"
+      },
+      "1": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:01.569",
+        "end_time_stamp": "00:01:06.573",
+        "delta_t": "00:00:05.004"
+      },
+      "2": {
+        "front_view": true,
+        "side_view": true,
+        "back_view": false,
+        "start_time_stamp": "00:01:34.970",
+        "end_time_stamp": "00:01:40.480",
+        "delta_t": "00:00:05.510"
+      }
+    }
+  }
+}
