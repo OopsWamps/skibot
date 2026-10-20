@@ -1,0 +1,18 @@
+
+
+---------------------------------------------------------------------
+Processing D:\vibecoding\skibot\datasets\epfl_ski2dpose\videos\Videos\5UHRvqx1iuQ\0.mp4
+On Monday 19. October 2026, 18:49:42
+---------------------------------------------------------------------
+
+Estimating pose...
+Using model HALPE_26 for body_with_feet pose estimation in balanced mode.
+No valid CUDA, ROCM, or MPS installation found: using OpenVINO backend with CPU. Does not work on macOS for RTMO models.
+Using cpu device with openvino backend.
+Persons detection is run every 4 frames (pose estimation is run at every frame). Tracking is done with sports2d: match_by keypoints, predict_displacement False.
+All persons are analyzed. Person ordering method is greatest_displacement.
+keypoint_likelihood_threshold=0.3, average_likelihood_threshold=0.5, keypoint_number_threshold=0.3
+Skipping right wrist angle computation because at least one of the following keypoints is not provided by the pose estimation model: ['RElbow', 'RWrist', 'RIndex'].
+Skipping left wrist angle computation because at least one of the following keypoints is not provided by the pose estimation model: ['LElbow', 'LIndex', 'LWrist'].
+
+Processing video stream...

@@ -4,6 +4,10 @@
 对每张标注图：跑 rtmlib（与 Sports2D 同款 balanced 模式），与人工标注逐关节比
 距离（像素 + 按人体尺度归一），并对比屈髋/膝弯角度的绝对差。
 
+除汇总外还落盘逐样本明细（.detail.jsonl：每关节误差、每角度 gt/got、
+左右腿 swap 检测标记）和膝弯误差最差帧的叠加图（tail_overlays/），
+供尾部归因用，避免二次推理。
+
 用法：python scripts/reconcile_epfl.py [--max N]
 默认 --images datasets/epfl_ski2dpose/images --labels .../ski2dpose_labels.json
 """
@@ -54,6 +58,41 @@ def angle_at(a, b, c) -> float:
     return float(np.degrees(np.arccos(np.clip(np.dot(v1, v2) / n, -1.0, 1.0))))
 
 
+# swap 检测：预测的 X 侧关节若离标注的另一半更近，判为左右腿交换
+SWAP_JOINTS = ["hip_right", "knee_right", "ankle_right",
+               "hip_left", "knee_left", "ankle_left"]
+
+
+def draw_overlay(img, epfl_full, ours, key, err):
+    """绿=人工标注骨架，红=模型预测，用于最差帧人工复核。
+
+    epfl_full 是 24x3（含 vis 列），ours 是 26x3 halpe（未检出为 NaN）。
+    """
+    import cv2
+    gt = np.full((24, 2), np.nan)
+    for j in range(24):
+        if epfl_full[j][2] == 1:
+            gt[j] = epfl_full[j, :2]
+    for tri in ANGLE_TRIPLETS.values():
+        ia, ib, ic = (EPFL_JOINTS.index(n) for n in tri)
+        ha, hb, hc = (EPFL_TO_HALPE[n] for n in tri)
+        if not np.isnan(gt[[ia, ib, ic], 0]).any():
+            cv2.line(img, tuple(gt[ia].astype(int)), tuple(gt[ib].astype(int)), (80, 220, 80), 2)
+            cv2.line(img, tuple(gt[ib].astype(int)), tuple(gt[ic].astype(int)), (80, 220, 80), 2)
+        if not np.isnan(ours[[ha, hb, hc], 0]).any():
+            cv2.line(img, tuple(ours[ha, :2].astype(int)), tuple(ours[hb, :2].astype(int)), (60, 60, 230), 2)
+            cv2.line(img, tuple(ours[hb, :2].astype(int)), tuple(ours[hc, :2].astype(int)), (60, 60, 230), 2)
+    for jname, hidx in EPFL_TO_HALPE.items():
+        j = EPFL_JOINTS.index(jname)
+        if not np.isnan(gt[j, 0]):
+            cv2.circle(img, tuple(gt[j].astype(int)), 4, (80, 220, 80), -1)
+        if not np.isnan(ours[hidx, 0]):
+            cv2.circle(img, tuple(ours[hidx, :2].astype(int)), 3, (60, 60, 230), -1)
+    cv2.putText(img, f"{key} knee_err={err:.0f}deg", (10, 25),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+    return img
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--images", type=Path, default=ROOT / "datasets/epfl_ski2dpose/images")
@@ -62,6 +101,8 @@ def main() -> int:
     ap.add_argument("--out", type=Path,
                     default=ROOT / "datasets/epfl_ski2dpose/reconcile_report.json")
     ap.add_argument("--max", type=int, default=0, help="最多对账多少张（0=全部）")
+    ap.add_argument("--overlays", type=int, default=24,
+                    help="膝弯误差最差 N 帧输出叠加图（0=不输出）")
     args = ap.parse_args()
 
     from rtmlib import BodyWithFeet  # 与 Sports2D balanced 同款
@@ -88,6 +129,9 @@ def main() -> int:
         return 1
 
     joint_errs, joint_errs_norm, angle_errs = [], [], {k: [] for k in ANGLE_TRIPLETS}
+    detail_rows: list[dict] = []
+    worst_knee: list[tuple[float, str, Path]] = []  # (膝弯最大误差, key, 图片路径)
+    kept_frames: dict[str, tuple] = {}  # key -> (epfl, ours) 供叠加图绘制
     n_done = 0
     for i, (p, rec) in enumerate(jobs):
         import cv2
@@ -120,6 +164,9 @@ def main() -> int:
             if any(rec["annotation"][EPFL_JOINTS.index(j)][2] == 1 for j in EPFL_TO_HALPE) else np.zeros((1, 2))
         scale = float(np.linalg.norm(vis_pts.max(0) - vis_pts.min(0))) or 1.0
 
+        row: dict = {"key": p.stem, "scale_px": round(scale, 1),
+                     "joints": {}, "swaps": {}, "angles": {}}
+        jidx = {n: EPFL_JOINTS.index(n) for n in SWAP_JOINTS}
         for jname, hidx in EPFL_TO_HALPE.items():
             j = EPFL_JOINTS.index(jname)
             if rec["annotation"][j][2] != 1 or ours[hidx, 2] < 0.3:
@@ -127,6 +174,17 @@ def main() -> int:
             e = float(np.linalg.norm(ours[hidx, :2] - epfl[j, :2]))
             joint_errs.append(e)
             joint_errs_norm.append(e / scale)
+            row["joints"][jname] = {"err_px": round(e, 1), "conf": round(float(ours[hidx, 2]), 2)}
+        for jn in SWAP_JOINTS:
+            h = EPFL_TO_HALPE[jn]
+            if ours[h, 2] < 0.3:
+                continue
+            other = jn.replace("_right", "_left").replace("_left", "_right")
+            ho = EPFL_TO_HALPE[other]
+            d_own = float(np.linalg.norm(ours[h, :2] - epfl[jidx[jn], :2]))
+            d_oth = float(np.linalg.norm(ours[h, :2] - epfl[jidx[other], :2]))
+            if d_oth < d_own:
+                row["swaps"][jn] = round(d_own - d_oth, 1)
 
         for aname, (v, a, b) in ANGLE_TRIPLETS.items():
             iv, ia, ib = (EPFL_JOINTS.index(x) for x in (v, a, b))
@@ -138,7 +196,14 @@ def main() -> int:
             gt = angle_at(epfl[iv], epfl[ia], epfl[ib])
             got = angle_at(ours[hv], ours[ha], ours[hb])
             if not (np.isnan(gt) or np.isnan(got)):
-                angle_errs[aname].append(abs(got - gt))
+                err = abs(got - gt)
+                angle_errs[aname].append(err)
+                row["angles"][aname] = {"gt": round(gt, 1), "got": round(got, 1),
+                                        "err": round(err, 1)}
+                if aname.startswith("knee_flexion"):
+                    worst_knee.append((err, row["key"], p))
+                    kept_frames[row["key"]] = (epfl.copy(), ours.copy())
+        detail_rows.append(row)
 
         n_done += 1
         if (i + 1) % 100 == 0:
@@ -148,6 +213,26 @@ def main() -> int:
     np.savez(args.out.with_suffix(".raw.npz"), joint_errs=np.array(joint_errs),
              joint_errs_norm=np.array(joint_errs_norm),
              **{f"angle_{k}": np.array(v) for k, v in angle_errs.items()})
+
+    detail_path = args.out.with_suffix(".detail.jsonl")
+    with detail_path.open("w", encoding="utf-8") as fh:
+        for r in detail_rows:
+            fh.write(json.dumps(r, ensure_ascii=False) + "\n")
+    print(f"[reconcile] 逐样本明细已写出：{detail_path}（{len(detail_rows)} 行）")
+
+    if args.overlays and worst_knee:
+        import cv2
+        worst_knee.sort(key=lambda t: -t[0])
+        odir = args.out.parent / "tail_overlays"
+        odir.mkdir(exist_ok=True)
+        for err, key, p in worst_knee[: args.overlays]:
+            img = cv2.imread(str(p))
+            if img is None or key not in kept_frames:
+                continue
+            epfl_k, ours_k = kept_frames[key]
+            cv2.imwrite(str(odir / f"{key}_err{err:.0f}.jpg"),
+                        draw_overlay(img, epfl_k, ours_k, key, err))
+        print(f"[reconcile] 最差 {min(args.overlays, len(worst_knee))} 帧叠加图：{odir}")
 
     def pct(arr, q):
         return float(np.percentile(arr, q)) if len(arr) else float("nan")

@@ -8,3 +8,4 @@ results/
 *.c3d
 .pytest_cache/
 datasets/epfl_ski2dpose/*.zip
+tmp_frames/
