@@ -34,7 +34,7 @@ class ViewResult:
     detail: dict
 
 
-def _limb_conf_mean(kp: np.ndarray, idxs: list[int]) -> float:
+def _limb_conf_mean(kp: np.ndarray, idxs: tuple[int, ...] | list[int]) -> float:
     confs = [kp[i, 2] for i in idxs if kp[i, 2] > 0]
     return float(np.mean(confs)) if confs else 0.0
 
@@ -42,7 +42,8 @@ def _limb_conf_mean(kp: np.ndarray, idxs: list[int]) -> float:
 def classify_view(keypoints: np.ndarray) -> ViewResult:
     """keypoints: (frames, n_kp, >=3)，x/y/置信度。返回逐视频的视角判定。"""
     n_frames = keypoints.shape[0]
-    frontal_votes, lateral_votes = [], []
+    frontal_votes: list[float] = []
+    lateral_votes: list[float] = []
 
     for f in range(n_frames):
         kp = keypoints[f]

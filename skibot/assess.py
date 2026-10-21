@@ -16,9 +16,10 @@ from .view import classify_view
 
 def assess(keypoints: np.ndarray, *, level: str,
            refs: dict, label: str,
-           person: dict | None = None, calibrated: bool = False) -> dict:
+           person: dict | None = None, calibrated: bool = False,
+           quality: dict | None = None) -> dict:
     """ keypoints: (frames, n_kp, >=3)，skeleton 契约。返回报告 dict（不落盘）。"""
     vr = classify_view(keypoints)
     series = M.compute_series(keypoints)
     return build_report(label, vr, series, refs, level,
-                        person=person, calibrated=calibrated)
+                        person=person, calibrated=calibrated, quality=quality)

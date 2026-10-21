@@ -15,7 +15,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from skibot.assess import assess  # noqa: E402
 from skibot.metrics import SAGITTAL_METRICS  # noqa: E402
 from skibot.reference import load  # noqa: E402
-from skibot.skeleton import L_HIP, L_KNEE, L_SHOULDER, R_HIP, R_KNEE, R_SHOULDER  # noqa: E402
+from skibot.skeleton import (  # noqa: E402
+    L_ANKLE, L_HIP, L_KNEE, L_SHOULDER, R_ANKLE, R_HIP, R_KNEE, R_SHOULDER,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -54,7 +56,35 @@ def test_assess_without_person():
     print("  assess：无 person 字段时不写入报告 ✓")
 
 
+def test_assess_quality_hints():
+    """质量提示：小人物 + 低置信度进 notice，深蹲占比进 knee_flexion caveat。"""
+    refs = load(ROOT / "reference_values.toml")
+    frames = side_view_frames()
+    frames[:, :, 2] = 0.35  # 全帧低置信度（<0.5）
+    frames[:, [L_ANKLE, R_ANKLE], 2] = 0.0  # 踝不参与（坐标 (0,0) 会算出假深蹲）
+    report = assess(frames, level="novice", refs=refs, label="t.mp4",
+                    quality={"person_height_ratio": 0.12,
+                             "low_conf_frame_ratio": 0.9})
+    assert "quality" in report
+    assert report["quality"]["person_height_ratio"] == 0.12
+    assert "偏小" in report["notice"] and "低置信度" in report["notice"], report["notice"]
+    # side_view_frames 的骨架直立（膝弯≈180°），不触发深蹲 caveat
+    knee = next(m for m in report["metrics"] if m["metric"] == "knee_flexion")
+    assert "caveat" not in knee
+    print("  assess：小人物+低置信度提示写入 notice ✓")
+
+    # 深蹲帧过半 → knee_flexion 带 caveat
+    squat = side_view_frames()
+    squat[:, [L_ANKLE, R_ANKLE]] = [[180, 290, 0.9], [181, 290, 0.9]]  # 膝弯 ≈82° <90°
+    report2 = assess(squat, level="novice", refs=refs, label="t.mp4")
+    knee2 = next(m for m in report2["metrics"] if m["metric"] == "knee_flexion")
+    assert "caveat" in knee2, knee2
+    assert report2["quality"]["deep_squat_frame_ratio"] >= 0.2
+    print("  assess：深蹲相位 caveat 写入膝弯项 ✓")
+
+
 if __name__ == "__main__":
     test_assess_side_view_report()
     test_assess_without_person()
+    test_assess_quality_hints()
     print("全部通过")

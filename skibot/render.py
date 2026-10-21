@@ -43,7 +43,7 @@ def render_annotated(
     h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    writer = cv2.VideoWriter(str(out_path), cv2.VideoWriter_fourcc(*"mp4v"), fps, (w, h))
+    writer = cv2.VideoWriter(str(out_path), cv2.VideoWriter_fourcc(*"mp4v"), fps, (w, h))  # type: ignore[attr-defined]
 
     series = M.compute_series(kp)
     active = [m for m, (_, need) in M.METRICS.items() if need == view]

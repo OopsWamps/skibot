@@ -79,7 +79,7 @@ def test_reference_and_report():
     refs = load(Path(__file__).resolve().parent.parent / "reference_values.toml")
     ref = lookup(refs, "hip_flexion", "advanced")
     s = np.full(50, 150.0)
-    assert pct_in_range(s, ref) == 1.0
+    assert pct_in_range(np.full(50, 100.0), ref) == 1.0  # 100 在竞技 p25~p75 [66,135] 内
     assert np.isnan(pct_in_range(np.full(10, np.nan), ref))
 
     vr = ViewResult("sagittal", 0.8, 50, {})

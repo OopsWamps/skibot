@@ -9,3 +9,7 @@ results/
 .pytest_cache/
 datasets/epfl_ski2dpose/*.zip
 tmp_frames/
+datasets/recreational_ski/raw/
+datasets/recreational_ski/results/
+datasets/recreational_ski/results_clips/
+reconcile_video_run*.log

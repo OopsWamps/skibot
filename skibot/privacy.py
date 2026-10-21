@@ -14,7 +14,7 @@ from pathlib import Path
 
 import cv2
 
-_CASCADE = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+_CASCADE = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"  # type: ignore[attr-defined]
 
 
 def blur_faces(src: str | Path, dst: str | Path, blur_ksize: int = 51) -> tuple[Path, int]:
@@ -28,7 +28,7 @@ def blur_faces(src: str | Path, dst: str | Path, blur_ksize: int = 51) -> tuple[
     h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     dst = Path(dst)
     dst.parent.mkdir(parents=True, exist_ok=True)
-    writer = cv2.VideoWriter(str(dst), cv2.VideoWriter_fourcc(*"mp4v"), fps, (w, h))
+    writer = cv2.VideoWriter(str(dst), cv2.VideoWriter_fourcc(*"mp4v"), fps, (w, h))  # type: ignore[attr-defined]
 
     detector = cv2.CascadeClassifier(_CASCADE)
     total = 0

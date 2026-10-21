@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import colorsys
 from dataclasses import dataclass
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -92,7 +93,7 @@ def resolve_color(name_or_hex: str) -> ColorSpec:
         if sv < 0.15:  # 低饱和十六进制按灰白黑处理
             return ColorSpec(name=s, v_min=90 if v > 0.35 else None,
                              v_max=90 if v <= 0.35 else None, s_max=0.20)
-        return ColorSpec(name=s, hue=hue, sat=max(0.20, sv * 0.5))
+        return ColorSpec(name=s, hue=hue, sat_min=max(0.20, sv * 0.5))
     if s in NAMED_COLORS:
         c = NAMED_COLORS[s]
         return ColorSpec(name=s, hue=c.get("hue"), sat_min=c.get("sat", 0.25),
@@ -231,7 +232,7 @@ def select_person(
                        n_valid=int((kp[:, :, 2] > 0).any(axis=1).sum()),
                        size_px=size_score(kp),
                        disp_px=displacement_score(kp))
-        if spec is not None:
+        if spec is not None and colors_by_pid is not None:
             row.color = round(color_score(colors_by_pid[pid], spec), 3)
         rows.append(row)
 
