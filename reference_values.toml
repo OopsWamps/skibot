@@ -1,8 +1,11 @@
 # 五项指标的三档参考区间（单位：度）
 #
-# ⚠️ 本表全部是占位初值：从公开滑雪教学体系的定性描述转译的候选数值，
-#    尚未经专业确认。逐项确认之前，报告一律输出"参考值未校准"水印。
-# TODO(睿君): 逐项确认/修改以下数值，确认后删除本注释块。
+# ⚠️ 数值来源（2026-10-20 产品负责人批准）：
+#   advanced  = EPFL Ski2DPose 世界杯竞技者人工标注的 p25~p75（全程跨相位粗带，
+#               见 datasets/epfl_ski2dpose/gt_angle_stats.json）——是数据，不是教练结论；
+#   novice/intermediate = 仍是公开教学体系定性描述转译的占位值，待专业确认。
+# 教练逐项确认之前，报告一律输出"参考值未校准"水印。
+# TODO(睿君/教练): 逐项确认/修改以下数值，确认后删除本注释块。
 #
 # 角度约定（与 Sports2D 一致）：
 #   hip_flexion        肩-髋-膝夹角，直立 ≈180°，屈髋变小
@@ -20,8 +23,8 @@ verdict_ok = "屈髋幅度在参考区间内"
 [hip_flexion.intermediate]
 range = [140, 160]
 
-[hip_flexion.advanced]
-range = [140, 158]
+[hip_flexion.advanced]  # 竞技 p25~p75：65.9~135.1
+range = [66, 135]
 
 [knee_flexion.novice]
 range = [140, 170]
@@ -30,10 +33,13 @@ verdict_high = "膝盖太直，没有吸收地形冲击的余地，下压脚踝�
 verdict_ok = "膝关节弯曲在参考区间内"
 
 [knee_flexion.intermediate]
+# 文献锚点（docs/lit_angle_values.md）：Bon et al. 2021（9 名滑雪教练，20° 坡）
+# PT 弯末外侧膝角 141.5~148.7°——弯末为屈膝最深时刻，全程中位应高于此值，
+# 带下沿 145 与文献自洽（2026-10-21 检索）。
 range = [145, 165]
 
-[knee_flexion.advanced]
-range = [145, 162]
+[knee_flexion.advanced]  # 竞技 p25~p75：96.9~153.1
+range = [97, 153]
 
 [trunk_lean.novice]
 range = [5, 25]
@@ -44,20 +50,23 @@ verdict_ok = "躯干前倾在参考区间内"
 [trunk_lean.intermediate]
 range = [8, 22]
 
-[trunk_lean.advanced]
-range = [10, 20]
+[trunk_lean.advanced]  # 竞技 p25~p75：21.6~49.2
+range = [22, 49]
 
 [knee_valgus.novice]
 range = [160, 180]
-verdict_low = "膝盖内扣，膝部承重力线偏移，双膝向雪板外侧撑开"
-verdict_high = "未检测到问题"
-verdict_ok = "膝关节力线在参考区间内"
+# 2026-10-21 AI 模拟教练评审（docs/coach_review_simulated.md）：正面髋-膝-踝夹角
+# 含屈曲深度投影（advanced 带 [94,153] 与膝弯带 [97,153] 几乎重合为证），
+# 不能把"小于 180°"直接解读为内扣错误。文案降级为描述统计，更名留二期。
+verdict_low = "正面膝角低于参考带（含屈膝深度的投影成分，不等同于内扣错误，请结合标注视频自查）"
+verdict_high = "正面膝角高于参考带（比参考带更接近伸直）"
+verdict_ok = "正面膝角在参考带内（作描述统计参考，不等同于力线判定）"
 
 [knee_valgus.intermediate]
 range = [165, 180]
 
-[knee_valgus.advanced]
-range = [168, 180]
+[knee_valgus.advanced]  # 竞技 p25~p75：94.2~152.7
+range = [94, 153]
 
 [shoulder_hip_align.novice]
 range = [0, 20]
@@ -67,5 +76,5 @@ verdict_ok = "肩髋对齐在参考区间内"
 [shoulder_hip_align.intermediate]
 range = [0, 15]
 
-[shoulder_hip_align.advanced]
-range = [0, 12]
+[shoulder_hip_align.advanced]  # 竞技 p25~p75：4.1~15.2
+range = [4, 15]
