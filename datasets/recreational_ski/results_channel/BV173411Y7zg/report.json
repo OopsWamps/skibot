@@ -1,0 +1,70 @@
+{
+  "schema": "skibot.report/0.1",
+  "generated_at": "2026-10-21T18:22:06",
+  "video": "D:\\vibecoding\\skibot\\datasets\\recreational_ski\\raw\\BV173411Y7zg\\BV173411Y7zg.mp4",
+  "level": "intermediate",
+  "view": {
+    "detected": "sagittal",
+    "score": -1.0,
+    "n_valid_frames": 105,
+    "frontal_ratio": 0.0
+  },
+  "assumptions": [
+    "纯 2D 图像平面角度，假设相机大致垂直于动作平面",
+    "躯干前倾角以图像竖直方向为零基准，未做相机倾斜校正；坡面坡度与相机不水平会以表观前倾进入读数",
+    "角度约定与 Sports2D 一致（见 reference_values.toml 头部）"
+  ],
+  "calibrated": false,
+  "notice": "参考区间为未校准的占位初值，本报告仅供自查，不构成教学结论。 低置信度帧占 96%，骨架质量受限，数值仅供参考",
+  "metrics": [
+    {
+      "metric": "hip_flexion",
+      "name": "屈髋角",
+      "reference": [
+        140,
+        160
+      ],
+      "median_deg": 93.7,
+      "pct_in_range": 0.067,
+      "band_percentile": -231.4,
+      "n_valid_frames": 104,
+      "verdict": "低于参考区间"
+    },
+    {
+      "metric": "knee_flexion",
+      "name": "膝弯曲角",
+      "reference": [
+        145,
+        165
+      ],
+      "median_deg": 73.0,
+      "pct_in_range": 0.023,
+      "band_percentile": -360.1,
+      "n_valid_frames": 88,
+      "verdict": "低于参考区间",
+      "caveat": "深蹲相位帧占 81%，2D 投影在此相位放大膝弯误差，数值仅供参考"
+    },
+    {
+      "metric": "trunk_lean",
+      "name": "躯干前倾角",
+      "reference": [
+        8,
+        22
+      ],
+      "median_deg": 9.6,
+      "pct_in_range": 0.619,
+      "band_percentile": 11.3,
+      "n_valid_frames": 105,
+      "verdict": "在参考区间内"
+    }
+  ],
+  "quality": {
+    "person_height_ratio": 0.721,
+    "low_conf_frame_ratio": 0.958,
+    "deep_squat_frame_ratio": 0.807
+  },
+  "person": {
+    "id": 5,
+    "selection": "自动判定：尺寸 100% + 位移 10%"
+  }
+}

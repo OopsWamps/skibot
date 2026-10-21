@@ -1,0 +1,56 @@
+{
+  "schema": "skibot.report/0.1",
+  "generated_at": "2026-10-21T21:21:54",
+  "video": "D:\\vibecoding\\skibot\\datasets\\recreational_ski\\raw\\BV1LK411A7ws\\BV1LK411A7ws.mp4",
+  "level": "intermediate",
+  "view": {
+    "detected": "frontal",
+    "score": 1.0,
+    "n_valid_frames": 607,
+    "frontal_ratio": 1.0
+  },
+  "assumptions": [
+    "纯 2D 图像平面角度，假设相机大致垂直于动作平面",
+    "躯干前倾角以图像竖直方向为零基准，未做相机倾斜校正；坡面坡度与相机不水平会以表观前倾进入读数",
+    "角度约定与 Sports2D 一致（见 reference_values.toml 头部）"
+  ],
+  "calibrated": false,
+  "notice": "参考区间为未校准的占位初值，本报告仅供自查，不构成教学结论。 低置信度帧占 86%，骨架质量受限，数值仅供参考",
+  "metrics": [
+    {
+      "metric": "knee_valgus",
+      "name": "膝盖内扣角",
+      "reference": [
+        165,
+        180
+      ],
+      "median_deg": 171.5,
+      "pct_in_range": 0.728,
+      "band_percentile": 43.4,
+      "n_valid_frames": 607,
+      "verdict": "在参考区间内"
+    },
+    {
+      "metric": "shoulder_hip_align",
+      "name": "肩髋对齐",
+      "reference": [
+        0,
+        15
+      ],
+      "median_deg": 4.8,
+      "pct_in_range": 0.96,
+      "band_percentile": 31.9,
+      "n_valid_frames": 607,
+      "verdict": "在参考区间内"
+    }
+  ],
+  "quality": {
+    "person_height_ratio": 0.714,
+    "low_conf_frame_ratio": 0.859,
+    "deep_squat_frame_ratio": 0.0
+  },
+  "person": {
+    "id": 7,
+    "selection": "自动判定：尺寸 94% + 位移 100%"
+  }
+}

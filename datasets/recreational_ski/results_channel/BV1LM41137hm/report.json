@@ -1,0 +1,69 @@
+{
+  "schema": "skibot.report/0.1",
+  "generated_at": "2026-10-21T23:24:06",
+  "video": "D:\\vibecoding\\skibot\\datasets\\recreational_ski\\raw\\BV1LM41137hm\\BV1LM41137hm.mp4",
+  "level": "intermediate",
+  "view": {
+    "detected": "sagittal",
+    "score": -0.36,
+    "n_valid_frames": 982,
+    "frontal_ratio": 0.31771894093686354
+  },
+  "assumptions": [
+    "纯 2D 图像平面角度，假设相机大致垂直于动作平面",
+    "躯干前倾角以图像竖直方向为零基准，未做相机倾斜校正；坡面坡度与相机不水平会以表观前倾进入读数",
+    "角度约定与 Sports2D 一致（见 reference_values.toml 头部）"
+  ],
+  "calibrated": false,
+  "notice": "参考区间为未校准的占位初值，本报告仅供自查，不构成教学结论。",
+  "metrics": [
+    {
+      "metric": "hip_flexion",
+      "name": "屈髋角",
+      "reference": [
+        140,
+        160
+      ],
+      "median_deg": 134.1,
+      "pct_in_range": 0.299,
+      "band_percentile": -29.3,
+      "n_valid_frames": 670,
+      "verdict": "低于参考区间"
+    },
+    {
+      "metric": "knee_flexion",
+      "name": "膝弯曲角",
+      "reference": [
+        145,
+        165
+      ],
+      "median_deg": 123.0,
+      "pct_in_range": 0.073,
+      "band_percentile": -109.8,
+      "n_valid_frames": 670,
+      "verdict": "低于参考区间"
+    },
+    {
+      "metric": "trunk_lean",
+      "name": "躯干前倾角",
+      "reference": [
+        8,
+        22
+      ],
+      "median_deg": 10.6,
+      "pct_in_range": 0.572,
+      "band_percentile": 18.8,
+      "n_valid_frames": 670,
+      "verdict": "在参考区间内"
+    }
+  ],
+  "quality": {
+    "person_height_ratio": 0.287,
+    "low_conf_frame_ratio": 0.203,
+    "deep_squat_frame_ratio": 0.049
+  },
+  "person": {
+    "id": 5,
+    "selection": "自动判定：尺寸 91% + 位移 100%"
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "schema": "skibot.report/0.1",
+  "generated_at": "2026-10-21T19:24:29",
+  "video": "D:\\vibecoding\\skibot\\datasets\\recreational_ski\\raw\\BV1hT4y1F7bM\\BV1hT4y1F7bM.mp4",
+  "level": "intermediate",
+  "view": {
+    "detected": "mixed",
+    "score": -0.17,
+    "n_valid_frames": 403,
+    "frontal_ratio": 0.41687344913151364
+  },
+  "assumptions": [
+    "纯 2D 图像平面角度，假设相机大致垂直于动作平面",
+    "躯干前倾角以图像竖直方向为零基准，未做相机倾斜校正；坡面坡度与相机不水平会以表观前倾进入读数",
+    "角度约定与 Sports2D 一致（见 reference_values.toml 头部）"
+  ],
+  "calibrated": false,
+  "notice": "参考区间为未校准的占位初值，本报告仅供自查，不构成教学结论。 跟拍混合视角：侧面指标取自侧面帧、正面指标取自正面帧（各自有效帧数见 n_valid_frames），相机转向造成的投影误差无法完全排除 低置信度帧占 94%，骨架质量受限，数值仅供参考",
+  "metrics": [
+    {
+      "metric": "hip_flexion",
+      "name": "屈髋角",
+      "reference": [
+        140,
+        160
+      ],
+      "median_deg": 146.7,
+      "pct_in_range": 0.647,
+      "band_percentile": 33.5,
+      "n_valid_frames": 235,
+      "verdict": "在参考区间内"
+    },
+    {
+      "metric": "knee_flexion",
+      "name": "膝弯曲角",
+      "reference": [
+        145,
+        165
+      ],
+      "median_deg": 154.6,
+      "pct_in_range": 0.664,
+      "band_percentile": 48.1,
+      "n_valid_frames": 235,
+      "verdict": "在参考区间内"
+    },
+    {
+      "metric": "trunk_lean",
+      "name": "躯干前倾角",
+      "reference": [
+        8,
+        22
+      ],
+      "median_deg": 7.8,
+      "pct_in_range": 0.472,
+      "band_percentile": -1.1,
+      "n_valid_frames": 235,
+      "verdict": "低于参考区间"
+    },
+    {
+      "metric": "knee_valgus",
+      "name": "膝盖内扣角",
+      "reference": [
+        165,
+        180
+      ],
+      "median_deg": 164.2,
+      "pct_in_range": 0.464,
+      "band_percentile": -5.1,
+      "n_valid_frames": 168,
+      "verdict": "低于参考区间"
+    },
+    {
+      "metric": "shoulder_hip_align",
+      "name": "肩髋对齐",
+      "reference": [
+        0,
+        15
+      ],
+      "median_deg": 3.5,
+      "pct_in_range": 0.976,
+      "band_percentile": 23.7,
+      "n_valid_frames": 168,
+      "verdict": "在参考区间内"
+    }
+  ],
+  "quality": {
+    "person_height_ratio": 0.416,
+    "low_conf_frame_ratio": 0.941,
+    "deep_squat_frame_ratio": 0.0
+  },
+  "person": {
+    "id": 7,
+    "selection": "自动判定：尺寸 100% + 位移 100%"
+  }
+}

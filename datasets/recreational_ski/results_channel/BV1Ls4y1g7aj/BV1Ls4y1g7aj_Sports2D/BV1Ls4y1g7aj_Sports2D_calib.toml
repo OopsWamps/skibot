@@ -1,0 +1,12 @@
+[BV1Ls4y1g7aj]
+name = "BV1Ls4y1g7aj"
+size = [ 1280, 720]
+matrix = [ [ 577.5839070501644, 0.0, 640.0], [ 0.0, 577.5839070501644, 360.0], [ 0.0, 0.0, 1.0]]
+distortions = [ 0.0, 0.0, 0.0, 0.0]
+rotation = [ 1.2091995761561456, 1.2091995761561456, -1.2091995761561456]
+translation = [ 0.0, 0.0, 10.0]
+fisheye = false
+
+[metadata]
+adjusted = false
+error = 0.0
