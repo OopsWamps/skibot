@@ -1,0 +1,65 @@
+
+
+---------------------------------------------------------------------
+Processing D:\vibecoding\skibot\datasets\epfl_ski2dpose\videos\Videos\oKQFABiOTw8\1.mp4
+On Tuesday 20. October 2026, 12:37:15
+---------------------------------------------------------------------
+
+Estimating pose...
+Using model HALPE_26 for body_with_feet pose estimation in balanced mode.
+No valid CUDA, ROCM, or MPS installation found: using OpenVINO backend with CPU. Does not work on macOS for RTMO models.
+Using cpu device with openvino backend.
+Persons detection is run every 4 frames (pose estimation is run at every frame). Tracking is done with sports2d: match_by keypoints, predict_displacement False.
+All persons are analyzed. Person ordering method is greatest_displacement.
+keypoint_likelihood_threshold=0.3, average_likelihood_threshold=0.5, keypoint_number_threshold=0.3
+Skipping right wrist angle computation because at least one of the following keypoints is not provided by the pose estimation model: ['RElbow', 'RWrist', 'RIndex'].
+Skipping left wrist angle computation because at least one of the following keypoints is not provided by the pose estimation model: ['LElbow', 'LIndex', 'LWrist'].
+
+Processing video stream...
+Video processing completed.
+Reordered persons: IDs of persons [1 2 0 3 4] become [0, 1, 2, 3, 4].
+
+Post-processing pose:
+- Person 0: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+Rejecting outliers with a Hampel filter.
+Filtering with Butterworth filter, 4th order, 6.0 Hz.
+Pose in pixels saved to D:\vibecoding\skibot\datasets\epfl_ski2dpose\video_reconcile\oKQFABiOTw8\1\1_Sports2D\1_Sports2D_px_person00.trc.
+- Person 1: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+  Person 1: Less than 10 valid frames in a row. Deleting person.
+- Person 2: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+  Person 2: Less than 10 valid frames in a row. Deleting person.
+- Person 3: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+  Person 3: Less than 10 valid frames in a row. Deleting person.
+- Person 4: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+  Person 4: Less than 10 valid frames in a row. Deleting person.
+
+Converting pose to meters:
+Could not estimate the floor angle, xy_origin, and visible from person 0. Make sure that the full body is visible. Using floor angle = 0бу, xy_origin = [960.0, 540.0] px, and visible_side = right.
+Converting from pixels to meters using a person height of 1.65 in meters (manual input), and of 366.51 in pixels (calculated).
+Perspective effects corrected using a camera-to-person distance of 10.00 m (obtained from a manual input).
+Camera horizon: 0.00бу, corrected using gait kinematics.
+Floor level: 540.00 px (from the top of the image), gait starting at 960.00 px in the right direction for the first person. Corrected using gait kinematics.
+
+Calibration saved to D:\vibecoding\skibot\datasets\epfl_ski2dpose\video_reconcile\oKQFABiOTw8\1\1_Sports2D\1_Sports2D_calib.toml.
+- Person 0: Could not automatically find gait direction. Please set visible_side to "front", "back", "left", or "right" for this person. Setting to "none".
+Pose in meters saved to D:\vibecoding\skibot\datasets\epfl_ski2dpose\video_reconcile\oKQFABiOTw8\1\1_Sports2D\1_Sports2D_m_person00.trc. 
+
+Post-processing angles (without inverse kinematics):
+- Person 0: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+Rejecting outliers with a Hampel filter.
+Filtering with Butterworth filter, 4th order, 6.0 Hz.
+Correcting segment angles by removing the 0.0бу floor angle.
+Angles saved to D:\vibecoding\skibot\datasets\epfl_ski2dpose\video_reconcile\oKQFABiOTw8\1\1_Sports2D\1_Sports2D_angles_person00.mot.
+- Person 1: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+  Person 1: Less than 10 valid frames in a row. Deleting person.
+- Person 2: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+  Person 2: Less than 10 valid frames in a row. Deleting person.
+- Person 3: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+  Person 3: Less than 10 valid frames in a row. Deleting person.
+- Person 4: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+  Person 4: Less than 10 valid frames in a row. Deleting person.
+
+Saving images of processed pose and angles:
+Processed video saved to D:\vibecoding\skibot\datasets\epfl_ski2dpose\video_reconcile\oKQFABiOTw8\1\1_Sports2D\1_Sports2D.mp4.
+
+Processing D:\vibecoding\skibot\datasets\epfl_ski2dpose\videos\Videos\oKQFABiOTw8\1.mp4 took 16.12 s.
