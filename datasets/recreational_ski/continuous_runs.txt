@@ -1,0 +1,7 @@
+BV1fN6RYbEdP_15fps (person11, 15fps, 有效 34%): [8288-13588] 353s
+BV1gJ411x7X5: no report
+BV1jb4y1q7V3_15fps (person27, 15fps, 有效 12%): [4492-5792] 87s
+BV1mt411p7yL (person04, 30fps, 有效 25%): [1644-2600] 32s
+BV1ow4m1f7fw (person06, 30fps, 有效 6%): 无 ≥10s 连续段
+BV1R5cjehENj (person23, 30fps, 有效 27%): [13480-18522] 168s
+BV1Zr4y167oa_15fps (person07, 15fps, 有效 96%): [0-6370] 425s
