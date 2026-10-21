@@ -37,20 +37,25 @@ EPFL_TO_HALPE_VIEW = {**EPFL_TO_HALPE, "head": 0}
 
 
 def smooth(series: np.ndarray, fps: float, cutoff: float = 6.0) -> np.ndarray:
-    """NaN 插值 + 4 阶 Butterworth 低通（Sports2D 默认量级），全长返回。"""
+    """NaN 插值 + 4 阶 Butterworth 低通（Sports2D 默认量级），全长返回。
+
+    序列太短时 filtfilt 的 padlen(=15) 放不下：退化成 3 点滑动平均。
+    """
     valid = ~np.isnan(series)
     if valid.sum() < 5:
         return series
     idx = np.arange(series.size)
     filled = np.interp(idx, idx[valid], series[valid])
-    try:
-        from scipy.signal import butter, filtfilt
-        b, a = butter(4, cutoff / (fps / 2.0))
-        return filtfilt(b, a, filled)
-    except ImportError:
-        w = 5
-        pad = np.pad(filled, w // 2, mode="edge")
-        return np.convolve(pad, np.ones(w) / w, mode="valid")
+    w = 3
+    if series.size > 15:
+        try:
+            from scipy.signal import butter, filtfilt
+            b, a = butter(4, cutoff / (fps / 2.0))
+            return filtfilt(b, a, filled)
+        except ImportError:
+            w = 5
+    pad = np.pad(filled, w // 2, mode="edge")
+    return np.convolve(pad, np.ones(w) / w, mode="valid")
 
 
 def main() -> int:
@@ -76,6 +81,9 @@ def main() -> int:
 
     # 断点续跑：已有 per-clip 结果直接载入误差样本，汇总不丢已完成 clip
     per_clip_path = args.out.with_suffix(".per_clip.jsonl")
+    errs_raw: dict[str, list[float]] = {m: [] for m in METRICS}
+    errs_filt: dict[str, list[float]] = {m: [] for m in METRICS}
+    joint_errs: list[float] = []
     done = {}
     if per_clip_path.exists():
         for line in per_clip_path.read_text(encoding="utf-8").splitlines():
@@ -91,9 +99,6 @@ def main() -> int:
         print(f"[video-reconcile] 已有 {len(done)} 条结果（含误差样本），续跑剩余 {len(jobs)} 条")
 
     import cv2
-    errs_raw: dict[str, list[float]] = {m: [] for m in METRICS}
-    errs_filt: dict[str, list[float]] = {m: [] for m in METRICS}
-    joint_errs: list[float] = []
     fh = per_clip_path.open("a", encoding="utf-8")
 
     for n, (vid, split, imgs) in enumerate(jobs):
@@ -133,14 +138,16 @@ def main() -> int:
                     gt[f, hidx] = (x * w, y * h, 1.0)
         gt_series = compute_series(gt)
 
-        # 选轨迹：与标注平均关节距离最小者
+        # 选轨迹：与标注平均关节距离最小者（向量化：race 广角 clip 可检出 20+ 人）
+        gt_pts, gt_ok = gt[:, :, :2], gt[:, :, 2] >= 0.5
+
         def traj_dist(pid: int) -> float:
-            ds = []
-            for f in range(min(kps[pid].shape[0], n_vid_frames)):
-                for jname, hidx in EPFL_TO_HALPE.items():
-                    if gt[f, hidx, 2] >= 0.5 and kps[pid][f, hidx, 2] >= 0.3:
-                        ds.append(float(np.linalg.norm(kps[pid][f, hidx, :2] - gt[f, hidx, :2])))
-            return float(np.mean(ds)) if ds else 1e9
+            k = kps[pid]
+            n = min(k.shape[0], gt.shape[0])
+            ok = gt_ok[:n] & (k[:n, :, 2] >= 0.3)
+            d = np.linalg.norm(k[:n, :, :2] - gt_pts[:n], axis=2)
+            vals = d[ok]
+            return float(vals.mean()) if vals.size else 1e9
 
         cand = sorted(((traj_dist(p), p) for p in kps))
         if not cand or cand[0][0] >= 1e9:
@@ -167,7 +174,9 @@ def main() -> int:
                     clip_rows["filt"][m].append(abs(float(our_smooth[m][f] - gv)))
             for jname, hidx in EPFL_TO_HALPE.items():
                 if gt[f, hidx, 2] >= 0.5 and kp[f, hidx, 2] >= 0.3:
-                    joint_errs.append(float(np.linalg.norm(kp[f, hidx, :2] - gt[f, hidx, :2])))
+                    e = float(np.linalg.norm(kp[f, hidx, :2] - gt[f, hidx, :2]))
+                    joint_errs.append(e)
+                    clip_rows["joints"].append(e)
         clip_rows["n_cmp"] = len(clip_rows["raw"]["knee_flexion"])
         for m in METRICS:
             errs_raw[m].extend(clip_rows["raw"][m])

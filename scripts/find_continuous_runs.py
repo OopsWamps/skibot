@@ -1,0 +1,105 @@
+"""反查已完成分析素材中的连续滑行段：选中人物 trc 的连续有效区间 → 原视频时间段。
+
+判定：trc 行有效 = 多数关键点似然 > 0.5 且坐标非 NaN。连续 ≥ MIN_S 秒的区间即候选滑行段。
+用法：.venv/Scripts/python.exe scripts/find_continuous_runs.py [result_dir ...]
+产物：datasets/recreational_ski/continuous_runs.txt（每条素材的滑行段列表，原视频帧号）
+"""
+
+import re
+import sys
+from pathlib import Path
+
+import numpy as np
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
+ROOT = Path(__file__).resolve().parent.parent
+RES = ROOT / "datasets/recreational_ski/results"
+MIN_S = 10.0          # 连续滑行段最短秒数
+LIK_THR = 0.5
+KP_FRAC = 0.6         # 有效关键点占比阈值
+
+
+def read_trc(path: Path) -> tuple[float, np.ndarray]:
+    """读 Sports2D px trc（tab 分隔，列=frame,time,(x,y,z)*22）。返回 (帧率, 有效掩码[T])。"""
+    lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    data_start = next(i for i, ln in enumerate(lines) if ln.startswith("Frame#\t")) + 2
+    rows = []
+    fps = 30.0
+    n_cols = None
+    for ln in lines[data_start:]:
+        parts = ln.split("\t")
+        if n_cols is None:
+            n_cols = len(parts)
+        vals = [float(p) if p.strip() else np.nan for p in parts[:n_cols]]
+        if len(vals) == n_cols:
+            rows.append(vals)
+    if not rows:
+        return fps, np.zeros(0, bool)
+    arr = np.array(rows, dtype=float)
+    n_kp = (arr.shape[1] - 2) // 3
+    xy = arr[:, 2:2 + n_kp * 3].reshape(len(arr), n_kp, 3)
+    ok_kp = np.isfinite(xy[:, :, 0]) & np.isfinite(xy[:, :, 1])
+    valid = ok_kp.mean(axis=1) >= KP_FRAC
+    dt = np.diff(arr[:, 1])
+    pos = dt[dt > 0]
+    if len(pos):
+        fps = 1.0 / np.median(pos)
+    return fps, valid
+
+
+def continuous_runs(valid: np.ndarray, fps: float) -> list[tuple[int, int, float]]:
+    """连续 True 区间 → [(起帧, 止帧, 时长s), ...]，按帧号（0 起）。"""
+    runs = []
+    start = None
+    for i, v in enumerate(valid):
+        if v and start is None:
+            start = i
+        elif not v and start is not None:
+            dur = (i - start) / fps
+            if dur >= MIN_S:
+                runs.append((start, i - 1, dur))
+            start = None
+    if start is not None:
+        dur = (len(valid) - start) / fps
+        if dur >= MIN_S:
+            runs.append((start, len(valid) - 1, dur))
+    return runs
+
+
+def person_from_report(d: Path) -> int | None:
+    rep = d / "report.json"
+    if not rep.exists():
+        return None
+    import json
+    return json.loads(rep.read_text(encoding="utf-8")).get("person", {}).get("id")
+
+
+def main() -> int:
+    dirs = [Path(a) if Path(a).is_absolute() else ROOT / a for a in sys.argv[1:]]
+    dirs = [d for d in dirs if d.is_dir()] or sorted(p for p in RES.iterdir() if p.is_dir())
+    out = []
+    for d in dirs:
+        bv = d.name
+        pid = person_from_report(d)
+        if pid is None:
+            out.append(f"{bv}: no report")
+            continue
+        hits = sorted((d / f"{bv}_Sports2D").glob(f"*px_person{pid:02d}.trc"))
+        if not hits:
+            out.append(f"{bv}: no trc for person{pid:02d}")
+            continue
+        fps, valid = read_trc(hits[0])
+        runs = continuous_runs(valid, fps)
+        cov = valid.mean() if len(valid) else 0
+        out.append(f"{bv} (person{pid:02d}, {fps:.0f}fps, 有效 {cov*100:.0f}%): "
+                   + (", ".join(f"[{a}-{b}] {dur:.0f}s" for a, b, dur in runs[:8]) or "无 ≥10s 连续段"))
+    outp = ROOT / "datasets/recreational_ski/continuous_runs.txt"
+    outp.write_text("\n".join(out) + "\n", encoding="utf-8")
+    print(f"written {outp}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
