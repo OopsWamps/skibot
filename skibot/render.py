@@ -32,8 +32,9 @@ def render_annotated(
     kp: np.ndarray,                       # (frames,26,3) [x,y,conf]
     refs: dict[str, dict[str, MetricRef]],  # 全量参考表
     level: str,                           # 水平档，决定区间着色
-    view: str,                            # 'sagittal' | 'frontal'，决定叠加哪套指标
+    view: str,                            # 'sagittal' | 'frontal' | 'mixed'，决定叠加哪套指标
     out_path: str | Path,
+    frame_view: np.ndarray | None = None,  # 逐帧视角归属（mixed 时必传，逐帧门控 series）
 ) -> Path:
     cap = cv2.VideoCapture(str(video_src))
     if not cap.isOpened():
@@ -45,8 +46,12 @@ def render_annotated(
     out_path.parent.mkdir(parents=True, exist_ok=True)
     writer = cv2.VideoWriter(str(out_path), cv2.VideoWriter_fourcc(*"mp4v"), fps, (w, h))  # type: ignore[attr-defined]
 
-    series = M.compute_series(kp)
-    active = [m for m, (_, need) in M.METRICS.items() if need == view]
+    series = M.compute_series(kp, frame_view=frame_view)
+    if view == "mixed":
+        # 跟拍混合视角：逐帧门控已保证每个值出自其可信平面，全部指标可画
+        active = list(M.METRICS)
+    else:
+        active = [m for m, (_, need) in M.METRICS.items() if need == view]
     ref_by_metric = {m: lookup(refs, m, level) for m in active}
 
     f = 0

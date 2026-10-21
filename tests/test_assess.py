@@ -16,14 +16,18 @@ from skibot.assess import assess  # noqa: E402
 from skibot.metrics import SAGITTAL_METRICS  # noqa: E402
 from skibot.reference import load  # noqa: E402
 from skibot.skeleton import (  # noqa: E402
-    L_ANKLE, L_HIP, L_KNEE, L_SHOULDER, R_ANKLE, R_HIP, R_KNEE, R_SHOULDER,
+    L_ANKLE, L_ELBOW, L_HIP, L_KNEE, L_SHOULDER, R_ANKLE, R_ELBOW, R_HIP,
+    R_KNEE, R_SHOULDER,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
 def side_view_frames(n: int = 20) -> np.ndarray:
-    """n 帧直立侧面骨架：肩线近重合、鼻子偏出，分类为 sagittal。"""
+    """n 帧直立侧面骨架：肩线近重合、鼻子偏出，分类为 sagittal。
+
+    左右侧肢体置信度不对称（远侧低）——喂 view 的信号 3。
+    """
     frames = []
     for _ in range(n):
         kp = np.zeros((26, 3))
@@ -33,6 +37,11 @@ def side_view_frames(n: int = 20) -> np.ndarray:
         kp[R_HIP] = [112, 200, 0.9]
         kp[L_KNEE] = [110, 300, 0.9]
         kp[R_KNEE] = [111, 300, 0.9]
+        # 左近右远：右侧肢体置信度低 → 左右不对称（>0.25）→ 侧面票
+        kp[L_ELBOW] = [108, 150, 0.8]
+        kp[R_ELBOW] = [106, 150, 0.2]
+        kp[L_ANKLE] = [110, 400, 0.9]
+        kp[R_ANKLE] = [111, 400, 0.2]
         kp[0] = [130, 60, 0.9]  # NOSE 偏出肩中点
         frames.append(kp)
     return np.stack(frames)
@@ -83,8 +92,45 @@ def test_assess_quality_hints():
     print("  assess：深蹲相位 caveat 写入膝弯项 ✓")
 
 
+def frontal_frame() -> np.ndarray:
+    """单帧正面骨架：肩线水平、鼻子居中、两侧置信度对称 → frontal 票。"""
+    kp = np.zeros((26, 3))
+    kp[L_SHOULDER] = [90, 100, 0.9]
+    kp[R_SHOULDER] = [120, 100, 0.9]
+    kp[L_HIP] = [98, 200, 0.9]
+    kp[R_HIP] = [112, 200, 0.9]
+    kp[L_KNEE] = [96, 300, 0.9]
+    kp[R_KNEE] = [114, 300, 0.9]
+    kp[L_ANKLE] = [95, 400, 0.9]
+    kp[R_ANKLE] = [115, 400, 0.9]
+    kp[L_ELBOW] = [80, 150, 0.85]
+    kp[R_ELBOW] = [130, 150, 0.85]
+    kp[0] = [105, 60, 0.9]  # NOSE 居中
+    return kp
+
+
+def test_assess_mixed_view():
+    """跟拍混合视角：半侧面半正面 → mixed，五指标按帧级门控各自产出。"""
+    refs = load(ROOT / "reference_values.toml")
+    side = side_view_frames(10)
+    front = np.stack([frontal_frame() for _ in range(10)])
+    report = assess(np.concatenate([side, front]), level="novice", refs=refs,
+                    label="t.mp4")
+    assert report["view"]["detected"] == "mixed", report["view"]
+    names = [m["metric"] for m in report["metrics"]]
+    assert set(names) == {"hip_flexion", "knee_flexion", "trunk_lean",
+                          "knee_valgus", "shoulder_hip_align"}, names
+    by = {m["metric"]: m for m in report["metrics"]}
+    # sagittal 三项只取侧面帧（10），frontal 两项只取正面帧（10）
+    assert by["knee_flexion"]["n_valid_frames"] <= 10
+    assert by["shoulder_hip_align"]["n_valid_frames"] <= 10
+    assert "混合视角" in (report["notice"] or "")
+    print("  assess：mixed 视角逐帧门控，五指标各自产出 ✓")
+
+
 if __name__ == "__main__":
     test_assess_side_view_report()
     test_assess_without_person()
     test_assess_quality_hints()
+    test_assess_mixed_view()
     print("全部通过")

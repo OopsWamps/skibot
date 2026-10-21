@@ -29,6 +29,7 @@ from .skeleton import (
     L_ANKLE, L_HIP, L_KNEE, L_SHOULDER, R_ANKLE, R_HIP, R_KNEE, R_SHOULDER,
 )
 from .trc_io import keypoints_halpe, parse_trc
+from .view import classify_view_frames
 
 DEFAULT_REFS = Path(__file__).resolve().parent.parent / "reference_values.toml"
 
@@ -106,6 +107,7 @@ def analyze_one(video: Path, opts: AnalyzeOptions) -> Path:
     quality["low_conf_frame_ratio"] = round(float((core_ok < 0.75).mean()), 3)
 
     refs = load_refs(opts.refs)
+    frame_view = classify_view_frames(kp)
     report = assess(kp, level=opts.level, refs=refs, label=str(video),
                     person={"id": chosen, "selection": reason}, quality=quality)
     print(f"[skibot] 视角判定：{report['view']['detected']}"
@@ -115,7 +117,7 @@ def analyze_one(video: Path, opts: AnalyzeOptions) -> Path:
     print(f"[skibot] 报告已写出：{out}")
 
     anno = render_annotated(src, kp, refs, opts.level, report["view"]["detected"],
-                            work / f"{video.stem}_annotated.mp4")
+                            work / f"{video.stem}_annotated.mp4", frame_view=frame_view)
     print(f"[skibot] 标注视频（自绘，仅选中者）：{anno}")
     return out
 

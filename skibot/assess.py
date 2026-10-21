@@ -11,7 +11,7 @@ import numpy as np
 
 from . import metrics as M
 from .report import build_report
-from .view import classify_view
+from .view import classify_view, classify_view_frames
 
 
 def assess(keypoints: np.ndarray, *, level: str,
@@ -19,7 +19,8 @@ def assess(keypoints: np.ndarray, *, level: str,
            person: dict | None = None, calibrated: bool = False,
            quality: dict | None = None) -> dict:
     """ keypoints: (frames, n_kp, >=3)，skeleton 契约。返回报告 dict（不落盘）。"""
-    vr = classify_view(keypoints)
-    series = M.compute_series(keypoints)
+    frame_view = classify_view_frames(keypoints)
+    vr = classify_view(keypoints, frame_view=frame_view)
+    series = M.compute_series(keypoints, frame_view=frame_view)
     return build_report(label, vr, series, refs, level,
                         person=person, calibrated=calibrated, quality=quality)

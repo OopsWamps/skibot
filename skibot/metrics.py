@@ -64,33 +64,45 @@ def select_side(kp: np.ndarray) -> str:
     return "left" if left >= right else "right"
 
 
-def compute_series(keypoints: np.ndarray) -> dict[str, np.ndarray]:
-    """逐帧计算全部五项指标。无效帧为 NaN。keypoints: (frames, n_kp, >=3)。"""
+def compute_series(keypoints: np.ndarray, frame_view: np.ndarray | None = None) -> dict[str, np.ndarray]:
+    """逐帧计算全部五项指标。无效帧为 NaN。keypoints: (frames, n_kp, >=3)。
+
+    frame_view：view.classify_view_frames 的逐帧归属（'f'/'l'/''）。
+    传入时 sagittal 指标只在侧面帧算、frontal 指标只在正面帧算——
+    跟拍混合视角下每帧只贡献它可信平面的值；None 时全帧计算（合成
+    测试与抢救路径的向后兼容口径）。
+    """
     n = keypoints.shape[0]
     out = {m: np.full(n, np.nan) for m in ALL_METRICS}
 
     for f in range(n):
         kp = keypoints[f]
+        if frame_view is not None:
+            want = "f" if frame_view[f] == "f" else "l"
+        else:
+            want = None
+        do_sag = want != "f"   # 侧面帧（或未门控）：算 sagittal 三项
+        do_frt = want != "l"   # 正面帧（或未门控）：算 frontal 两项
         side = select_side(kp)
         sh, hip, knee, ank = SIDE_JOINTS[side]
 
-        if _ok(kp, sh, hip, knee):
+        if do_sag and _ok(kp, sh, hip, knee):
             out["hip_flexion"][f] = angle_at(kp[sh], kp[hip], kp[knee])
-        if _ok(kp, hip, knee, ank):
+        if do_sag and _ok(kp, hip, knee, ank):
             out["knee_flexion"][f] = angle_at(kp[hip], kp[knee], kp[ank])
 
-        if _ok(kp, L_SHOULDER, R_SHOULDER, L_HIP, R_HIP):
+        if do_sag and _ok(kp, L_SHOULDER, R_SHOULDER, L_HIP, R_HIP):
             neck = (kp[L_SHOULDER][:2] + kp[R_SHOULDER][:2]) / 2.0
             pelvis = (kp[L_HIP][:2] + kp[R_HIP][:2]) / 2.0
             trunk = np.array([*neck, 1.0])
             out["trunk_lean"][f] = vertical_deviation(pelvis, trunk)
 
-        if _ok(kp, L_HIP, L_KNEE, L_ANKLE) and _ok(kp, R_HIP, R_KNEE, R_ANKLE):
+        if do_frt and _ok(kp, L_HIP, L_KNEE, L_ANKLE) and _ok(kp, R_HIP, R_KNEE, R_ANKLE):
             left_valgus = angle_at(kp[L_HIP], kp[L_KNEE], kp[L_ANKLE])
             right_valgus = angle_at(kp[R_HIP], kp[R_KNEE], kp[R_ANKLE])
             out["knee_valgus"][f] = min(left_valgus, right_valgus)  # 取更扣的一侧
 
-        if _ok(kp, L_SHOULDER, R_SHOULDER, L_HIP, R_HIP):
+        if do_frt and _ok(kp, L_SHOULDER, R_SHOULDER, L_HIP, R_HIP):
             sh_line = kp[R_SHOULDER][:2] - kp[L_SHOULDER][:2]
             hip_line = kp[R_HIP][:2] - kp[L_HIP][:2]
             cross = abs(float(np.cross(sh_line, hip_line)))

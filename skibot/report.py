@@ -70,8 +70,11 @@ def build_report(
         quality["deep_squat_frame_ratio"] = round(squat, 3)
     notices = [] if calibrated else [UNCALIBRATED_NOTICE]
 
+    # 视角门控：整视频单一视角时按注册表筛；mixed（跟拍混合视角）下
+    # sagittal/frontal 指标已在 metrics.compute_series 逐帧门控，两侧都放行
+    view = view_result.view
     for name, (cname, need_view) in METRICS.items():
-        if view_result.view != need_view:
+        if view not in (need_view, "mixed"):
             continue
         s = series[name]
         ref = lookup(refs, name, level)
@@ -114,6 +117,9 @@ def build_report(
     if size_ratio is not None and size_ratio < SMALL_SUBJECT_RATIO:
         notices.append(f"人物在画面中偏小（约为画面高的 {size_ratio*100:.0f}%），"
                        "关键点误差增大，数值仅供参考")
+    if view == "mixed":
+        notices.append("跟拍混合视角：侧面指标取自侧面帧、正面指标取自正面帧"
+                       "（各自有效帧数见 n_valid_frames），相机转向造成的投影误差无法完全排除")
     low_conf = quality.get("low_conf_frame_ratio")
     if low_conf is not None and low_conf >= LOW_CONF_FRAME_RATIO_WARN:
         notices.append(f"低置信度帧占 {low_conf*100:.0f}%，骨架质量受限，数值仅供参考")
