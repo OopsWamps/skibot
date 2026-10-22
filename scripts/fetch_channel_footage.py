@@ -11,24 +11,20 @@ import json
 import subprocess
 import sys
 import time
-import urllib.request
 from pathlib import Path
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from _footage import CANDIDATES_CHANNEL, HDRS, fetch_meta  # noqa: E402
 
 # 重点滑雪博主（睿君 2026-10-21 指定：阿拉丁、skicat 等）
 CHANNELS = {
     "阿拉丁ski": 364913714,
     "SkiiCat": 33181532,
 }
-
-UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/126.0 Safari/537.36")
-HDRS = ["--add-headers", f"User-Agent: {UA}",
-        "--add-headers", "Referer: https://www.bilibili.com/"]
 
 
 def channel_bvids(mid: int) -> list[str]:
@@ -40,31 +36,9 @@ def channel_bvids(mid: int) -> list[str]:
     return [l.strip() for l in r.stdout.splitlines() if l.strip().startswith("BV")]
 
 
-def fetch_meta_bvid(bvid: str) -> dict | None:
-    req = urllib.request.Request(
-        f"https://api.bilibili.com/x/web-interface/view?bvid={bvid}",
-        headers={"User-Agent": UA, "Referer": "https://www.bilibili.com/"})
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            d = json.loads(resp.read().decode("utf-8"))
-    except Exception as e:
-        return {"bvid": bvid, "error": repr(e)}
-    if d.get("code") != 0:
-        return {"bvid": bvid, "error": f"code {d.get('code')}"}
-    v = d["data"]
-    return {
-        "bvid": v["bvid"], "aid": v["aid"], "title": v["title"],
-        "duration": v["duration"], "play": v["stat"]["view"],
-        "pubdate": v["pubdate"], "up": v["owner"]["name"], "mid": v["owner"]["mid"],
-        "desc": (v.get("desc") or "")[:200],
-        "url": f"https://www.bilibili.com/video/{v['bvid']}",
-    }
-
-
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", type=Path,
-                    default=ROOT / "datasets/recreational_ski/candidates_channel.jsonl")
+    ap.add_argument("--out", type=Path, default=CANDIDATES_CHANNEL)
     args = ap.parse_args()
 
     seen: set[str] = set()
@@ -83,7 +57,7 @@ def main() -> int:
             for bvid in bvids:
                 if bvid in seen:
                     continue
-                meta = fetch_meta_bvid(bvid)
+                meta = fetch_meta(bvid=bvid)
                 if meta and "error" not in meta:
                     fh.write(json.dumps(meta, ensure_ascii=False) + "\n")
                     fh.flush()

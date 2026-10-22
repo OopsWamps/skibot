@@ -15,9 +15,11 @@ import numpy as np
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from _footage import RESULTS, VERIFY_PREVIEW, strip_frames  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-RES = ROOT / "datasets/recreational_ski/results"
-PREV = ROOT / "datasets/recreational_ski/verify_preview"
 
 # 相邻帧角速度阈值（度/秒）：滑雪动态动作通常 <300；持续 >600 视为跳变/误检
 JUMP_RATE_DEG_S = 600.0
@@ -62,27 +64,6 @@ def jump_stats(sports2d_dir: Path, person_id: int, fps: float) -> str:
                      for pct, name, mx in stats[:3])
 
 
-def strip_frames(annotated: Path, out: Path) -> None:
-    """标注视频 25/50/75% 三帧横拼，黄字标帧号。"""
-    cap = cv2.VideoCapture(str(annotated))
-    n = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    tiles = []
-    for frac in (0.25, 0.5, 0.75):
-        cap.set(cv2.CAP_PROP_POS_FRAMES, int(n * frac))
-        ok, img = cap.read()
-        if not ok:
-            continue
-        h, w = img.shape[:2]
-        scale = 360 / h
-        img = cv2.resize(img, (int(w * scale), 360))
-        cv2.putText(img, f"f{int(n * frac)}", (10, 32),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 2)
-        tiles.append(img)
-    cap.release()
-    if tiles:
-        cv2.imwrite(str(out), np.hstack(tiles))
-
-
 def video_fps(video: Path) -> float:
     cap = cv2.VideoCapture(str(video))
     fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
@@ -91,9 +72,9 @@ def video_fps(video: Path) -> float:
 
 
 def main() -> int:
-    PREV.mkdir(exist_ok=True)
+    VERIFY_PREVIEW.mkdir(exist_ok=True)
     lines = []
-    for d in sorted(RES.iterdir()):
+    for d in sorted(RESULTS.iterdir()):
         if not d.is_dir():
             continue
         bv = d.name
@@ -104,7 +85,7 @@ def main() -> int:
             continue
         rep = json.loads(rep_path.read_text(encoding="utf-8"))
         view = rep.get("view", {})
-        strip_frames(ann, PREV / f"{bv}.jpg")
+        strip_frames(ann, VERIFY_PREVIEW / f"{bv}.jpg")
         pid = rep.get("person", {}).get("id", 0)
         jumps = jump_stats(d / f"{bv}_Sports2D", pid, video_fps(ann))
         mets = "; ".join(

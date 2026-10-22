@@ -5,7 +5,6 @@
 产物：datasets/recreational_ski/continuous_runs.txt（每条素材的滑行段列表，原视频帧号）
 """
 
-import re
 import sys
 from pathlib import Path
 
@@ -14,38 +13,29 @@ import numpy as np
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from skibot.trc_io import parse_trc_full  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "datasets/recreational_ski/results"
 MIN_S = 10.0          # 连续滑行段最短秒数
-LIK_THR = 0.5
+LIK_THR = 0.5         # 本工具口径备忘：原设计按似然筛，trc 本体无似然列，实际判据只看坐标
 KP_FRAC = 0.6         # 有效关键点占比阈值
 
 
 def read_trc(path: Path) -> tuple[float, np.ndarray]:
-    """读 Sports2D px trc（tab 分隔，列=frame,time,(x,y,z)*22）。返回 (帧率, 有效掩码[T])。"""
-    lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
-    data_start = next(i for i, ln in enumerate(lines) if ln.startswith("Frame#\t")) + 2
-    rows = []
-    fps = 30.0
-    n_cols = None
-    for ln in lines[data_start:]:
-        parts = ln.split("\t")
-        if n_cols is None:
-            n_cols = len(parts)
-        vals = [float(p) if p.strip() else np.nan for p in parts[:n_cols]]
-        if len(vals) == n_cols:
-            rows.append(vals)
-    if not rows:
-        return fps, np.zeros(0, bool)
-    arr = np.array(rows, dtype=float)
-    n_kp = (arr.shape[1] - 2) // 3
-    xy = arr[:, 2:2 + n_kp * 3].reshape(len(arr), n_kp, 3)
-    ok_kp = np.isfinite(xy[:, :, 0]) & np.isfinite(xy[:, :, 1])
+    """读 Sports2D px trc：解析走 trc_io.parse_trc_full，这里只算帧率与有效掩码。
+
+    有效行 = x/y 均非 NaN 的关键点占比 ≥ KP_FRAC（trc 丢点写空单元格 → NaN，
+    与原先的 isfinite 判据同义）。
+    """
+    _, time, xyz = parse_trc_full(path)
+    ok_kp = np.isfinite(xyz[:, :, 0]) & np.isfinite(xyz[:, :, 1])
     valid = ok_kp.mean(axis=1) >= KP_FRAC
-    dt = np.diff(arr[:, 1])
+    dt = np.diff(time)
     pos = dt[dt > 0]
-    if len(pos):
-        fps = 1.0 / np.median(pos)
+    fps = 1.0 / np.median(pos) if len(pos) else 30.0
     return fps, valid
 
 

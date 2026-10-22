@@ -1,7 +1,7 @@
 """从已生成的 px trc 直接出报告，跳过 Sports2D 的收尾阶段。
 
 用法：python scripts/report_from_trc.py <trc路径> <输出json> [level]
-走 skibot.assess 与主路径同一条评估流程（DECISIONS 10 的量角对账靠它，
+走 skibot.assess 与主路径同一条评估流程（一期 #10 的量角对账靠它，
 行为必须与主路径一致）。
 """
 
@@ -19,21 +19,19 @@ import numpy as np  # noqa: E402
 from skibot.assess import assess  # noqa: E402
 from skibot.reference import load as load_refs  # noqa: E402
 from skibot.report import save_json  # noqa: E402
-from skibot.trc_io import keypoints_halpe, parse_trc  # noqa: E402
+from skibot.trc_io import load_kp  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
 def report_from_trc(trc: Path, out_json: Path, level: str = "intermediate"):
-    names, xyz = parse_trc(trc)
-    print(f"[salvage] markers ({len(names)}): {names}")
-
-    kp = keypoints_halpe(names, xyz)  # (frames, 26, 3): [x, y, conf]
+    kp = load_kp(trc)  # (frames, 26, 3): [x, y, conf]
     mapped = [i for i in range(26) if not np.all(np.isnan(kp[:, i, 0]))]
     print(f"[salvage] Halpe 映射命中 {len(mapped)}/26: {mapped}")
 
     refs = load_refs(ROOT / "reference_values.toml")
-    report = assess(kp, level=level, refs=refs, label=str(trc))
+    res = assess(kp, level=level, refs=refs, label=str(trc))
+    report = res.report
 
     v = report["view"]
     print(f"[salvage] 视角: {v['detected']} (score={v['score']:.2f}, {v['n_valid_frames']} 帧)")

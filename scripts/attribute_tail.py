@@ -17,7 +17,11 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = Path(__file__).resolve().parent.parent
-DETAIL = ROOT / "datasets/epfl_ski2dpose/reconcile_report.detail.jsonl"
+sys.path.insert(0, str(ROOT))
+
+from skibot.epfl import DATASET_DIR  # noqa: E402
+
+DETAIL = ROOT / DATASET_DIR / "reconcile_report.detail.jsonl"
 
 KNEE_ANGLES = ["knee_flexion_left", "knee_flexion_right"]
 SIDE_OF = {"knee_flexion_left": "left", "knee_flexion_right": "right"}

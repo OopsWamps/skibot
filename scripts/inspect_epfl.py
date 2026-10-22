@@ -12,8 +12,12 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = Path(__file__).resolve().parent.parent
-LABELS = ROOT / "datasets/epfl_ski2dpose/ski2dpose_labels.json"
-VIDS = ROOT / "datasets/epfl_ski2dpose/videos/Videos"
+sys.path.insert(0, str(ROOT))
+
+from skibot.epfl import LABELS_JSON, VIDEOS_DIR  # noqa: E402
+
+LABELS = ROOT / LABELS_JSON
+VIDS = ROOT / VIDEOS_DIR
 
 labels = json.loads(LABELS.read_text(encoding="utf-8"))
 print(f"顶层键（vid）{len(labels)} 个: {sorted(labels)[:20]}")

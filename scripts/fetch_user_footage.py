@@ -11,13 +11,14 @@ import json
 import subprocess
 import sys
 import time
-import urllib.request
 from pathlib import Path
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from _footage import CANDIDATES, HDRS, fetch_meta  # noqa: E402
 
 # 大众双板形态：侧面/正面跟拍、新手真实滑行、教学示范（标准动作参照）
 KEYWORDS = [
@@ -31,12 +32,6 @@ KEYWORDS = [
     "长白山 滑雪 双板",
 ]
 
-UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/126.0 Safari/537.36")
-
-# 不带浏览器头时 B站搜索接口大概率回 412（实测）
-HDRS = ["--add-headers", f"User-Agent: {UA}", "--add-headers", "Referer: https://www.bilibili.com/"]
-
 
 def search_aids(keyword: str, n: int) -> list[str]:
     r = subprocess.run(
@@ -45,33 +40,12 @@ def search_aids(keyword: str, n: int) -> list[str]:
     return [l.strip() for l in r.stdout.splitlines() if l.strip().isdigit()]
 
 
-def fetch_meta(aid: str) -> dict | None:
-    req = urllib.request.Request(
-        f"https://api.bilibili.com/x/web-interface/view?aid={aid}",
-        headers={"User-Agent": UA, "Referer": "https://www.bilibili.com/"})
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            d = json.loads(resp.read().decode("utf-8"))
-    except Exception as e:
-        return {"aid": aid, "error": repr(e)}
-    if d.get("code") != 0:
-        return {"aid": aid, "error": f"code {d.get('code')}"}
-    v = d["data"]
-    return {
-        "aid": aid, "bvid": v["bvid"], "title": v["title"],
-        "duration": v["duration"], "play": v["stat"]["view"],
-        "pubdate": v["pubdate"], "up": v["owner"]["name"], "mid": v["owner"]["mid"],
-        "desc": (v.get("desc") or "")[:200],
-        "url": f"https://www.bilibili.com/video/{v['bvid']}",
-    }
-
-
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--keywords", default="",
                     help="逗号分隔，覆盖内置 KEYWORDS（增量轮次用）")
     ap.add_argument("--per-keyword", type=int, default=12)
-    ap.add_argument("--out", type=Path, default=ROOT / "datasets/recreational_ski/candidates.jsonl")
+    ap.add_argument("--out", type=Path, default=CANDIDATES)
     args = ap.parse_args()
     keywords = [k.strip() for k in args.keywords.split(",") if k.strip()] or KEYWORDS
 

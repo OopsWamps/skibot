@@ -20,20 +20,17 @@ if hasattr(sys.stdout, "reconfigure"):
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "scripts"))
 
 import numpy as np  # noqa: E402
 
-from reconcile_epfl import EPFL_JOINTS, EPFL_TO_HALPE  # noqa: E402
 from skibot.backend import discover_tracks, run_sports2d  # noqa: E402
+from skibot.epfl import DATASET_DIR, EPFL_TO_HALPE, LABELS_JSON, VIDEOS_DIR, gt_keypoints  # noqa: E402
 from skibot.metrics import METRICS, angle_at, compute_series  # noqa: E402
+from skibot.skeleton import CONF_MIN  # noqa: E402
 from skibot.trc_io import keypoints_halpe, parse_trc  # noqa: E402
 
-LABELS = ROOT / "datasets/epfl_ski2dpose/ski2dpose_labels.json"
-VIDS = ROOT / "datasets/epfl_ski2dpose/videos/Videos"
-
-# epfl 'head' 兼任 halpe NOSE(0)，理由同 ref_from_epfl.py
-EPFL_TO_HALPE_VIEW = {**EPFL_TO_HALPE, "head": 0}
+LABELS = ROOT / LABELS_JSON
+VIDS = ROOT / VIDEOS_DIR
 
 
 def smooth(series: np.ndarray, fps: float, cutoff: float = 6.0) -> np.ndarray:
@@ -62,8 +59,8 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--only", default="", help="逗号分隔 vid/clip，只跑这些")
     ap.add_argument("--limit", type=int, default=0, help="最多跑多少条 clip（0=全部）")
-    ap.add_argument("--work", type=Path, default=ROOT / "datasets/epfl_ski2dpose/video_reconcile")
-    ap.add_argument("--out", type=Path, default=ROOT / "datasets/epfl_ski2dpose/reconcile_video_report.json")
+    ap.add_argument("--work", type=Path, default=ROOT / DATASET_DIR / "video_reconcile")
+    ap.add_argument("--out", type=Path, default=ROOT / DATASET_DIR / "reconcile_video_report.json")
     args = ap.parse_args()
 
     labels = json.loads(LABELS.read_text(encoding="utf-8"))
@@ -129,22 +126,18 @@ def main() -> int:
         n_vid_frames = max(int(r["frame_idx"]) for r in imgs.values()) + 1
 
         items = sorted(imgs.items(), key=lambda kv: kv[1]["frame_idx"])
-        gt = np.zeros((n_vid_frames, 26, 3))
-        for iid, rec in items:
-            f = rec["frame_idx"]
-            for jname, hidx in EPFL_TO_HALPE_VIEW.items():
-                x, y, vis = rec["annotation"][EPFL_JOINTS.index(jname)]
-                if vis == 1:
-                    gt[f, hidx] = (x * w, y * h, 1.0)
+        gt = gt_keypoints(items, w, h, n_frames=n_vid_frames)
         gt_series = compute_series(gt)
 
         # 选轨迹：与标注平均关节距离最小者（向量化：race 广角 clip 可检出 20+ 人）
+        # 0.5 是 GT 可见度门槛（标注 vis∈{0,1}，>=0.5 即标注可见），
+        # 与模型置信度的 CONF_MIN 是两套契约，不互换
         gt_pts, gt_ok = gt[:, :, :2], gt[:, :, 2] >= 0.5
 
         def traj_dist(pid: int) -> float:
             k = kps[pid]
             n = min(k.shape[0], gt.shape[0])
-            ok = gt_ok[:n] & (k[:n, :, 2] >= 0.3)
+            ok = gt_ok[:n] & (k[:n, :, 2] >= CONF_MIN)
             d = np.linalg.norm(k[:n, :, :2] - gt_pts[:n], axis=2)
             vals = d[ok]
             return float(vals.mean()) if vals.size else 1e9
@@ -173,7 +166,8 @@ def main() -> int:
                 if not (np.isnan(our_smooth[m][f]) or np.isnan(gv)):
                     clip_rows["filt"][m].append(abs(float(our_smooth[m][f] - gv)))
             for jname, hidx in EPFL_TO_HALPE.items():
-                if gt[f, hidx, 2] >= 0.5 and kp[f, hidx, 2] >= 0.3:
+                # gt 侧 0.5 = 二值 GT 可见度（另一套契约），kp 侧 CONF_MIN = 模型置信度
+                if gt[f, hidx, 2] >= 0.5 and kp[f, hidx, 2] >= CONF_MIN:
                     e = float(np.linalg.norm(kp[f, hidx, :2] - gt[f, hidx, :2]))
                     joint_errs.append(e)
                     clip_rows["joints"].append(e)

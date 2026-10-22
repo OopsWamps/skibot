@@ -23,24 +23,12 @@ if hasattr(sys.stdout, "reconfigure"):
 import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
 
-# EPFL 24 关节顺序 → Halpe-26 索引（只对账我们有映射的点）
-EPFL_JOINTS = [
-    "head", "neck",
-    "shoulder_right", "elbow_right", "hand_right", "pole_basket_right",
-    "shoulder_left", "elbow_left", "hand_left", "pole_basket_left",
-    "hip_right", "knee_right", "ankle_right",
-    "hip_left", "knee_left", "ankle_left",
-    "ski_tip_right", "toes_right", "heel_right", "ski_tail_right",
-    "ski_tip_left", "toes_left", "heel_left", "ski_tail_left",
-]
-EPFL_TO_HALPE = {
-    "head": 17, "neck": 18,
-    "shoulder_right": 6, "elbow_right": 8, "hand_right": 10,
-    "shoulder_left": 5, "elbow_left": 7, "hand_left": 9,
-    "hip_right": 12, "knee_right": 14, "ankle_right": 16,
-    "hip_left": 11, "knee_left": 13, "ankle_left": 15,
-}
+from skibot.epfl import DATASET_DIR, EPFL_JOINTS, EPFL_TO_HALPE, IMAGES_DIR, LABELS_JSON  # noqa: E402
+from skibot.metrics import angle_at  # noqa: E402
+from skibot.skeleton import CONF_MIN  # noqa: E402
+
 # 角度对账：(顶点, 端点1, 端点2) 的 EPFL 关节名，名称与 metrics.py 的约定一致
 ANGLE_TRIPLETS = {
     "hip_flexion_right": ("hip_right", "shoulder_right", "knee_right"),
@@ -48,14 +36,6 @@ ANGLE_TRIPLETS = {
     "knee_flexion_right": ("knee_right", "hip_right", "ankle_right"),
     "knee_flexion_left": ("knee_left", "hip_left", "ankle_left"),
 }
-
-
-def angle_at(a, b, c) -> float:
-    v1, v2 = a - b, c - b
-    n = np.linalg.norm(v1) * np.linalg.norm(v2)
-    if n < 1e-9:
-        return np.nan
-    return float(np.degrees(np.arccos(np.clip(np.dot(v1, v2) / n, -1.0, 1.0))))
 
 
 # swap 检测：预测的 X 侧关节若离标注的另一半更近，判为左右腿交换
@@ -95,11 +75,10 @@ def draw_overlay(img, epfl_full, ours, key, err):
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--images", type=Path, default=ROOT / "datasets/epfl_ski2dpose/images")
-    ap.add_argument("--labels", type=Path,
-                    default=ROOT / "datasets/epfl_ski2dpose/ski2dpose_labels.json")
+    ap.add_argument("--images", type=Path, default=ROOT / IMAGES_DIR)
+    ap.add_argument("--labels", type=Path, default=ROOT / LABELS_JSON)
     ap.add_argument("--out", type=Path,
-                    default=ROOT / "datasets/epfl_ski2dpose/reconcile_report.json")
+                    default=ROOT / DATASET_DIR / "reconcile_report.json")
     ap.add_argument("--max", type=int, default=0, help="最多对账多少张（0=全部）")
     ap.add_argument("--overlays", type=int, default=24,
                     help="膝弯误差最差 N 帧输出叠加图（0=不输出）")
@@ -169,7 +148,7 @@ def main() -> int:
         jidx = {n: EPFL_JOINTS.index(n) for n in SWAP_JOINTS}
         for jname, hidx in EPFL_TO_HALPE.items():
             j = EPFL_JOINTS.index(jname)
-            if rec["annotation"][j][2] != 1 or ours[hidx, 2] < 0.3:
+            if rec["annotation"][j][2] != 1 or ours[hidx, 2] < CONF_MIN:
                 continue
             e = float(np.linalg.norm(ours[hidx, :2] - epfl[j, :2]))
             joint_errs.append(e)
@@ -177,7 +156,7 @@ def main() -> int:
             row["joints"][jname] = {"err_px": round(e, 1), "conf": round(float(ours[hidx, 2]), 2)}
         for jn in SWAP_JOINTS:
             h = EPFL_TO_HALPE[jn]
-            if ours[h, 2] < 0.3:
+            if ours[h, 2] < CONF_MIN:
                 continue
             other = jn.replace("_right", "_left").replace("_left", "_right")
             ho = EPFL_TO_HALPE[other]
@@ -191,7 +170,7 @@ def main() -> int:
             if min(rec["annotation"][iv][2], rec["annotation"][ia][2], rec["annotation"][ib][2]) != 1:
                 continue
             hv, ha, hb = EPFL_TO_HALPE[v], EPFL_TO_HALPE[a], EPFL_TO_HALPE[b]
-            if min(ours[hv, 2], ours[ha, 2], ours[hb, 2]) < 0.3:
+            if min(ours[hv, 2], ours[ha, 2], ours[hb, 2]) < CONF_MIN:
                 continue
             gt = angle_at(epfl[iv], epfl[ia], epfl[ib])
             got = angle_at(ours[hv], ours[ha], ours[hb])

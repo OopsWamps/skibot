@@ -21,8 +21,8 @@
           160
         ],
         "advanced": [
-          140,
-          158
+          66,
+          135
         ]
       }
     },
@@ -47,8 +47,8 @@
           165
         ],
         "advanced": [
-          145,
-          162
+          97,
+          153
         ]
       }
     },
@@ -73,8 +73,8 @@
           180
         ],
         "advanced": [
-          168,
-          180
+          94,
+          153
         ]
       }
     },
@@ -99,8 +99,8 @@
           15
         ],
         "advanced": [
-          0,
-          12
+          4,
+          15
         ]
       }
     },
@@ -125,8 +125,8 @@
           22
         ],
         "advanced": [
-          10,
-          20
+          22,
+          49
         ]
       }
     }
@@ -198,7 +198,7 @@
     {
       "vid": "5UHRvqx1iuQ",
       "clip": "6",
-      "view": "ambiguous",
+      "view": "mixed",
       "score": 0.19,
       "n_valid": 47
     },
@@ -219,14 +219,14 @@
     {
       "vid": "5UHRvqx1iuQ",
       "clip": "9",
-      "view": "ambiguous",
+      "view": "mixed",
       "score": 0.06,
       "n_valid": 49
     },
     {
       "vid": "FW1S3VAKui8",
       "clip": "0",
-      "view": "ambiguous",
+      "view": "mixed",
       "score": -0.03,
       "n_valid": 29
     },
@@ -520,7 +520,7 @@
     {
       "vid": "he3w2n9WvrI",
       "clip": "2",
-      "view": "ambiguous",
+      "view": "mixed",
       "score": 0.1,
       "n_valid": 31
     },
@@ -541,7 +541,7 @@
     {
       "vid": "he3w2n9WvrI",
       "clip": "5",
-      "view": "ambiguous",
+      "view": "mixed",
       "score": 0.2,
       "n_valid": 25
     },
@@ -653,7 +653,7 @@
     {
       "vid": "oKQFABiOTw8",
       "clip": "18",
-      "view": "ambiguous",
+      "view": "mixed",
       "score": 0.18,
       "n_valid": 22
     },
@@ -688,7 +688,7 @@
     {
       "vid": "oKQFABiOTw8",
       "clip": "22",
-      "view": "ambiguous",
+      "view": "mixed",
       "score": -0.07,
       "n_valid": 30
     },
@@ -723,7 +723,7 @@
     {
       "vid": "oKQFABiOTw8",
       "clip": "27",
-      "view": "ambiguous",
+      "view": "mixed",
       "score": 0.14,
       "n_valid": 28
     },
@@ -772,7 +772,7 @@
     {
       "vid": "oKQFABiOTw8",
       "clip": "7",
-      "view": "ambiguous",
+      "view": "mixed",
       "score": 0.2,
       "n_valid": 20
     },
@@ -884,21 +884,21 @@
     {
       "vid": "qxfgw1Kd98A",
       "clip": "20",
-      "view": "ambiguous",
+      "view": "mixed",
       "score": -0.2,
       "n_valid": 15
     },
     {
       "vid": "qxfgw1Kd98A",
       "clip": "3",
-      "view": "ambiguous",
+      "view": "mixed",
       "score": -0.11,
       "n_valid": 27
     },
     {
       "vid": "qxfgw1Kd98A",
       "clip": "4",
-      "view": "ambiguous",
+      "view": "mixed",
       "score": 0.0,
       "n_valid": 10
     },
@@ -989,7 +989,7 @@
     {
       "vid": "uLW74013Wp0",
       "clip": "15",
-      "view": "ambiguous",
+      "view": "mixed",
       "score": 0.0,
       "n_valid": 14
     },

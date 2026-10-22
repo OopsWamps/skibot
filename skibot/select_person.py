@@ -24,7 +24,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from .skeleton import L_ANKLE, L_HIP, L_KNEE, R_ANKLE, R_HIP, R_KNEE
+from .skeleton import L_ANKLE, L_HIP, L_KNEE, R_ANKLE, R_HIP, R_KNEE, size_score
 
 MAX_SAMPLES = 30        # 每个人最多采多少帧的裤腿颜色
 PATCH = 7               # 采样块边长（像素）
@@ -188,19 +188,6 @@ def color_score(rgb: np.ndarray, spec: ColorSpec) -> float:
         if len(rgb) == 0:
             return 0.0
     return float(_match_mask(rgb, spec).mean())
-
-
-def size_score(kp: np.ndarray) -> float:
-    """中位骨架包围盒主轴长度 px。仅统计关键点齐全的帧。"""
-    lens = []
-    for f in range(kp.shape[0]):
-        pts = kp[f][kp[f][:, 2] > 0][:, :2]
-        if len(pts) < 6:
-            continue
-        w = np.nanmax(pts[:, 0]) - np.nanmin(pts[:, 0])
-        h = np.nanmax(pts[:, 1]) - np.nanmin(pts[:, 1])
-        lens.append(max(w, h))
-    return float(np.median(lens)) if lens else 0.0
 
 
 def displacement_score(kp: np.ndarray) -> float:

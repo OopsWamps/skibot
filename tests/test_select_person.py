@@ -13,9 +13,11 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from skibot.select_person import (  # noqa: E402
-    color_score, resolve_color, select_person, size_score,
+    color_score, resolve_color, select_person,
 )
-from skibot.skeleton import L_HIP, L_KNEE, L_SHOULDER, R_HIP, R_KNEE, R_SHOULDER  # noqa: E402
+from skibot.skeleton import (  # noqa: E402
+    L_HIP, L_KNEE, L_SHOULDER, R_HIP, R_KNEE, R_SHOULDER, size_score,
+)
 
 
 def track(x0: float, spread: float, drift: float, n: int = 20,

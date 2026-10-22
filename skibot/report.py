@@ -18,8 +18,8 @@ from .reference import LEVELS, MetricRef, lookup, pct_in_range
 
 UNCALIBRATED_NOTICE = "参考区间为未校准的占位初值，本报告仅供自查，不构成教学结论。"
 
-# 质量提示阈值（DECISIONS 5 的两个缓解项）：深蹲相位 2D 压缩放大膝弯误差；
-# 人物过小（关键点 bbox < 画面高 20%）时像素噪声富集，EPFL 验证误差 1.8 倍。
+# 质量提示阈值（验证进展 #3 的报告侧缓解）：深蹲相位 2D 压缩放大膝弯误差；
+# 人物过小（关键点 bbox < 画面高 20%）时像素噪声富集（其 #2：EPFL 误差 1.8 倍）。
 DEEP_SQUAT_KNEE_DEG = 90.0
 DEEP_SQUAT_RATIO_WARN = 0.2
 SMALL_SUBJECT_RATIO = 0.2
@@ -64,7 +64,11 @@ def build_report(
 
     metrics_out = []
     knee = series.get("knee_flexion")
-    squat = np.nan if knee is None else float(np.mean(knee[~np.isnan(knee)] < DEEP_SQUAT_KNEE_DEG))
+    if knee is None:
+        squat = np.nan
+    else:
+        valid_knee = knee[~np.isnan(knee)]
+        squat = np.nan if valid_knee.size == 0 else float(np.mean(valid_knee < DEEP_SQUAT_KNEE_DEG))
     quality = dict(quality) if quality else {}
     if not np.isnan(squat):
         quality["deep_squat_frame_ratio"] = round(squat, 3)

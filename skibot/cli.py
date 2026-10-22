@@ -1,8 +1,8 @@
 """命令行入口：skibot analyze <video...> / skibot render
 
 流程（docs/DECISIONS.md 第 4 条）：打码 → Sports2D 管线（backend）→ 主轨迹
-选择（select_person）→ 评估流程（assess：视角分类 → 五指标 → 参考区间 → 报告）
-→ 报告落盘 + 自绘标注视频（render，只画选中者）。
+选择（select_person）→ 评估流程（assess：视角分类 → 五指标 → 参考区间 →
+评估结果）→ 报告落盘 + 自绘标注视频（render，只画选中者）。
 """
 
 from __future__ import annotations
@@ -12,8 +12,6 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-import cv2
-
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")  # Windows GBK 控制台兜底
 
@@ -22,14 +20,10 @@ from .assess import assess
 from .backend import DEFAULT_TRACK_ORDER, discover_tracks, run_sports2d
 from .privacy import blur_faces
 from .reference import load as load_refs
-from .render import render_annotated
+from .render import probe_video, render_annotated
 from .report import save_json
-from .select_person import sample_pants_pixels, select_person, size_score
-from .skeleton import (
-    L_ANKLE, L_HIP, L_KNEE, L_SHOULDER, R_ANKLE, R_HIP, R_KNEE, R_SHOULDER,
-)
-from .trc_io import keypoints_halpe, parse_trc
-from .view import classify_view_frames
+from .select_person import sample_pants_pixels, select_person
+from .trc_io import load_kp
 
 DEFAULT_REFS = Path(__file__).resolve().parent.parent / "reference_values.toml"
 
@@ -59,7 +53,7 @@ def analyze_one(video: Path, opts: AnalyzeOptions) -> Path:
     run_sports2d(src, work, opts.track_order)
 
     tracks = discover_tracks(work)
-    kps = {pid: keypoints_halpe(*parse_trc(p)) for pid, p in tracks.items()}
+    kps = {pid: load_kp(p) for pid, p in tracks.items()}
     print(f"[skibot] 检测到 {len(kps)} 个人物轨迹：{sorted(kps)}")
 
     if opts.person is not None:
@@ -93,31 +87,19 @@ def analyze_one(video: Path, opts: AnalyzeOptions) -> Path:
     kp = kps[chosen]
     print(f"[skibot] 关键点：{tracks[chosen].name}，{kp.shape[0]} 帧")
 
-    # 质量统计（DECISIONS 5 缓解项）：人物高度占比 + 核心点缺失帧占比
-    # （trc 的 conf 是 0/1 存在标记，判核心 8 点而非全部 26 点——雪场远景
-    #  缺脸/手脚趾很常见，全点口径会让提示常驻失去区分度）
-    cap = cv2.VideoCapture(str(src))
-    frame_h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    cap.release()
-    quality: dict = {}
-    if frame_h:
-        quality["person_height_ratio"] = round(size_score(kp) / frame_h, 3)
-    core = [L_SHOULDER, R_SHOULDER, L_HIP, R_HIP, L_KNEE, R_KNEE, L_ANKLE, R_ANKLE]
-    core_ok = (kp[:, core, 2] > 0).mean(axis=1)
-    quality["low_conf_frame_ratio"] = round(float((core_ok < 0.75).mean()), 3)
-
     refs = load_refs(opts.refs)
-    frame_view = classify_view_frames(kp)
-    report = assess(kp, level=opts.level, refs=refs, label=str(video),
-                    person={"id": chosen, "selection": reason}, quality=quality)
+    _, frame_h, _ = probe_video(src)
+    res = assess(kp, level=opts.level, refs=refs, label=str(video),
+                 person={"id": chosen, "selection": reason}, frame_height=frame_h)
+    report = res.report
     print(f"[skibot] 视角判定：{report['view']['detected']}"
           f"（score={report['view']['score']:.2f}，{report['view']['n_valid_frames']} 有效帧）")
 
     out = save_json(report, work / "report.json")
     print(f"[skibot] 报告已写出：{out}")
 
-    anno = render_annotated(src, kp, refs, opts.level, report["view"]["detected"],
-                            work / f"{video.stem}_annotated.mp4", frame_view=frame_view)
+    anno = render_annotated(src, kp, res, refs, opts.level,
+                            work / f"{video.stem}_annotated.mp4")
     print(f"[skibot] 标注视频（自绘，仅选中者）：{anno}")
     return out
 
@@ -146,8 +128,8 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--video", type=Path, required=True, help="画面来源视频（建议用打码后的）")
     r.add_argument("--trc", type=Path, required=True, help="px trc 文件")
     r.add_argument("--out", type=Path, required=True, help="输出 mp4 路径")
-    r.add_argument("--view", choices=("sagittal", "frontal"), default="sagittal",
-                   help="叠加哪套指标")
+    r.add_argument("--view", choices=("sagittal", "frontal", "mixed"), default=None,
+                   help="叠加哪套指标（默认按评估判定，mixed 走逐帧门控）")
     r.add_argument("--level", choices=("novice", "intermediate", "advanced"),
                    default="intermediate", help="水平档，决定区间着色")
     r.add_argument("--refs", type=Path, default=DEFAULT_REFS,
@@ -156,10 +138,14 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.cmd == "render":
-        names, xyz = parse_trc(args.trc)
-        kp = keypoints_halpe(names, xyz)
+        kp = load_kp(args.trc)
         refs = load_refs(args.refs)
-        out = render_annotated(args.video, kp, refs, args.level, args.view, args.out)
+        res = assess(kp, level=args.level, refs=refs, label=str(args.trc))
+        if args.view is None and res.report["view"]["detected"] == "ambiguous":
+            print("[skibot] 视角判定不明确且未指定 --view，叠加层只画骨架；要出指标用 --view 强制",
+                  file=sys.stderr)
+        out = render_annotated(args.video, kp, res, refs, args.level, args.out,
+                               view=args.view)
         print(f"[skibot] 标注视频已写出：{out}")
         return 0
 

@@ -68,9 +68,9 @@ def compute_series(keypoints: np.ndarray, frame_view: np.ndarray | None = None) 
     """逐帧计算全部五项指标。无效帧为 NaN。keypoints: (frames, n_kp, >=3)。
 
     frame_view：view.classify_view_frames 的逐帧归属（'f'/'l'/''）。
-    传入时 sagittal 指标只在侧面帧算、frontal 指标只在正面帧算——
-    跟拍混合视角下每帧只贡献它可信平面的值；None 时全帧计算（合成
-    测试与抢救路径的向后兼容口径）。
+    传入时 sagittal 指标只在侧面帧算、frontal 指标只在正面帧算，''（无
+    信号）帧不归属任何平面、两项都不算——"侧面指标取自侧面帧"的声明
+    对每一帧都成立；None 时全帧计算（合成测试的向后兼容口径）。
     """
     n = keypoints.shape[0]
     out = {m: np.full(n, np.nan) for m in ALL_METRICS}
@@ -78,11 +78,12 @@ def compute_series(keypoints: np.ndarray, frame_view: np.ndarray | None = None) 
     for f in range(n):
         kp = keypoints[f]
         if frame_view is not None:
-            want = "f" if frame_view[f] == "f" else "l"
+            fv = frame_view[f]
+            if fv not in ("f", "l"):
+                continue  # 无信号帧：不归属任何平面，不贡献任何指标
+            do_sag, do_frt = fv == "l", fv == "f"
         else:
-            want = None
-        do_sag = want != "f"   # 侧面帧（或未门控）：算 sagittal 三项
-        do_frt = want != "l"   # 正面帧（或未门控）：算 frontal 两项
+            do_sag = do_frt = True
         side = select_side(kp)
         sh, hip, knee, ank = SIDE_JOINTS[side]
 

@@ -1,15 +1,17 @@
-"""Halpe-26 骨架布局契约：关键点索引、trc 别名、肢体链、conf 语义。
+"""Halpe-26 骨架布局契约：关键点索引、trc 别名、肢体链、conf 语义、几何原语。
 
 全项目以 (frames, 26, 3) 的 [x, y, conf] 数组说话（trc_io.keypoints_halpe 产出）。
 conf 语义：trc 不含置信度，keypoints_halpe 把"点存在"记 1、缺失记 0 ——
 连续 0~1 值只出现在合成测试数据里；CONF_MIN 这类阈值在真实管线上恒为真，
 真正起作用的是 0/1 存在性。
 
-二期换 pose model（DECISIONS 5 的 body_with_feet 换代）时只改这个文件，
+二期换 pose model（一期 #5 的 body_with_feet 换代）时只改这个文件，
 trc 别名表一并在此核对补全。
 """
 
 from __future__ import annotations
+
+import numpy as np
 
 # Halpe-26 关键点索引（Sports2D 默认 pose_model=body_with_feet）
 NOSE = 0
@@ -34,6 +36,25 @@ SIDE_JOINTS: dict[str, tuple[int, int, int, int]] = {
     "left": (L_SHOULDER, L_HIP, L_KNEE, L_ANKLE),
     "right": (R_SHOULDER, R_HIP, R_KNEE, R_ANKLE),
 }
+
+# 质量统计口径的核心八点（验证进展 #3 的人物偏小/低置信度提示用）：
+# 躯干与下肢大关节。雪场远景缺脸/手脚趾很常见，全点口径会让提示常驻失去区分度。
+CORE_JOINTS = (L_SHOULDER, R_SHOULDER, L_HIP, R_HIP, L_KNEE, R_KNEE, L_ANKLE, R_ANKLE)
+
+
+def size_score(kp: np.ndarray) -> float:
+    """中位骨架包围盒主轴长度 px。选人尺寸分与"人物偏小"质量统计共用。
+    仅统计关键点齐全（≥6 点）的帧。
+    """
+    lens = []
+    for f in range(kp.shape[0]):
+        pts = kp[f][kp[f][:, 2] > 0][:, :2]
+        if len(pts) < 6:
+            continue
+        w = np.nanmax(pts[:, 0]) - np.nanmin(pts[:, 0])
+        h = np.nanmax(pts[:, 1]) - np.nanmin(pts[:, 1])
+        lens.append(max(w, h))
+    return float(np.median(lens)) if lens else 0.0
 
 # Halpe-26 名字 → trc 里可能出现的写法。TODO_VALIDATE: 首次真视频运行时
 # 核对 Sports2D 实际输出的 marker 名并补全此映射。

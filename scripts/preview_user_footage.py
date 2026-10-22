@@ -10,16 +10,12 @@ import json
 import sys
 from pathlib import Path
 
-import cv2
-import numpy as np
-
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-ROOT = Path(__file__).resolve().parent.parent
-MANIFEST = ROOT / "datasets/recreational_ski/manifest.jsonl"
-PREVIEW = ROOT / "datasets/recreational_ski/preview"
-TH = 360  # 预览帧高
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from _footage import MANIFEST, PREVIEW, ROOT, strip_frames  # noqa: E402
 
 
 def main() -> int:
@@ -29,27 +25,10 @@ def main() -> int:
         out = PREVIEW / f"{Path(r['file']).stem}.jpg"
         if out.exists():
             continue
-        cap = cv2.VideoCapture(str(ROOT / r["file"]))
-        n = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        picks = [int(n * f) for f in (0.25, 0.5, 0.75)] if n > 10 else list(range(n))
-        tiles = []
-        for f in picks:
-            cap.set(cv2.CAP_PROP_POS_FRAMES, min(f, n - 1))
-            ok, img = cap.read()
-            if not ok:
-                continue
-            s = TH / img.shape[0]
-            img = cv2.resize(img, (int(img.shape[1] * s), TH))
-            cv2.putText(img, f"f{f}", (8, 30), cv2.FONT_HERSHEY_SIMPLEX, 1.0,
-                        (0, 255, 255), 2)
-            tiles.append(img)
-        cap.release()
-        if not tiles:
+        if strip_frames(ROOT / r["file"], out):
+            print(f"[preview] {r['bvid']} → {out.name}")
+        else:
             print(f"[preview] {r['bvid']} 读不出帧")
-            continue
-        sheet = np.hstack(tiles)
-        cv2.imwrite(str(out), sheet, [cv2.IMWRITE_JPEG_QUALITY, 82])
-        print(f"[preview] {r['bvid']} → {out.name}")
     print(f"[preview] 完成 → {PREVIEW}")
     return 0
 

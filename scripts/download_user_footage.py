@@ -2,7 +2,7 @@
 
 清单是 fetch_user_footage.py 产出 candidates.jsonl 的人工筛选子集（保留 bvid 行）。
 ffmpeg 用 imageio-ffmpeg 的静态二进制（系统 PATH 里没有）。下载去重靠
-archive.txt，重跑只补缺失的。下完用 cv2 探分辨率/帧率写进 manifest.jsonl。
+archive.txt，重跑只补缺失的。下完探分辨率/帧率写进 manifest.jsonl（_footage.probe）。
 
 用法：python -I scripts/download_user_footage.py [--list curated.jsonl]
 """
@@ -14,31 +14,21 @@ import sys
 import time
 from pathlib import Path
 
-import cv2
 import imageio_ffmpeg
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-ROOT = Path(__file__).resolve().parent.parent
-RAW = ROOT / "datasets/recreational_ski/raw"
-ARCHIVE = ROOT / "datasets/recreational_ski/archive.txt"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from _footage import ARCHIVE, CURATED, MANIFEST, RAW, ROOT, probe  # noqa: E402
+
 FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
-
-
-def probe(path: Path) -> dict:
-    cap = cv2.VideoCapture(str(path))
-    info = {"w": int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
-            "h": int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
-            "fps": round(cap.get(cv2.CAP_PROP_FPS) or 0, 1),
-            "frames": int(cap.get(cv2.CAP_PROP_FRAME_COUNT))}
-    cap.release()
-    return info
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--list", type=Path, default=ROOT / "datasets/recreational_ski/curated.jsonl")
+    ap.add_argument("--list", type=Path, default=CURATED)
     ap.add_argument("--format", default="bv*[height<=720]+ba/b[height<=720]/b")
     args = ap.parse_args()
 
@@ -50,9 +40,8 @@ def main() -> int:
     print(f"[download] 待下载 {len(items)} 条；ffmpeg: {FFMPEG}")
 
     RAW.mkdir(parents=True, exist_ok=True)
-    manifest_path = ROOT / "datasets/recreational_ski/manifest.jsonl"
     ok = 0
-    with manifest_path.open("a", encoding="utf-8") as mf:
+    with MANIFEST.open("a", encoding="utf-8") as mf:
         for i, it in enumerate(items):
             bvid = it["bvid"]
             outdir = RAW / bvid
@@ -86,7 +75,7 @@ def main() -> int:
             ok += 1
             print(f"[download] {bvid}: {info['w']}x{info['h']} {info['fps']}fps "
                   f"{info['frames']} 帧", flush=True)
-    print(f"[download] 完成 {ok}/{len(items)} → {manifest_path}")
+    print(f"[download] 完成 {ok}/{len(items)} → {MANIFEST}")
     return 0
 
 

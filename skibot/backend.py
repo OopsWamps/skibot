@@ -1,9 +1,9 @@
-"""姿态后端 adapter（DECISIONS 5）：Sports2D 调用、产物发现、抢救契约。
+"""姿态后端 adapter（一期 #5）：Sports2D 调用、产物发现、抢救契约。
 
-cli 只经此模块与 Sports2D 打交道。抢救契约（DECISIONS 4 的管线 + 已知风险
+cli 只经此模块与 Sports2D 打交道。抢救契约（一期 #4 的管线 + 已知风险
 "收尾阶段可能挂死"）：子进程超时即终止，只要 px trc 已落盘，流程继续；
-discover_tracks 找不到产物才算失败。二期若换自管模型（DECISIONS 42），
-换掉这一个文件。
+discover_tracks 找不到产物才算失败。二期若换自管模型（docs/DECISIONS.md
+二期待办），换掉这一个文件。
 """
 
 from __future__ import annotations

@@ -69,13 +69,14 @@ def frame_votes(kp: np.ndarray) -> float:
 
 
 def classify_view_frames(keypoints: np.ndarray) -> np.ndarray:
-    """逐帧视角归属：'f'=正面，'l'=侧面，''=关键点缺失。
+    """逐帧视角归属：'f'=正面，'l'=侧面，''=无信号帧（关键点缺失）。
 
     归属口径沿用整视频版："非正面即侧面"（votes==0 归侧面）——45° 斜帧
     的 cos 投影误差对夹角类指标可接受，而骑墙帧判无归属会让跟拍视频的
-    有效帧大量流失。跟拍镜头缓慢转向时帧在 'f'/'l' 间周期切换，整视频
+    有效帧大量流失。注意 votes==0 与 '' 是两回事：前者是"信号持平"，后者
+    是"信号不存在"。跟拍镜头缓慢转向时帧在 'f'/'l' 间周期切换，整视频
     单一判定会落入 ambiguous 全盘出局；逐帧归属让每帧只参与它可信平面
-    的指标（metrics.compute_series 的 frame_view 口径）。
+    的指标（metrics.compute_series 的门控：'' 帧不贡献任何指标）。
     """
     n = keypoints.shape[0]
     out = np.full(n, "", dtype="<U1")

@@ -14,7 +14,10 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from skibot.trc_io import keypoints_halpe, parse_trc  # noqa: E402
+from skibot.trc_io import (  # noqa: E402
+    keypoints_halpe, load_kp, parse_trc, parse_trc_full, stitch,
+)
+from skibot.trc_io import write_trc as write_trc_file  # noqa: E402  避开本文件的 write_trc fixture
 
 
 def write_trc(text: str) -> Path:
@@ -120,10 +123,95 @@ def test_keypoints_halpe_per_frame_conf():
     print("  keypoints_halpe 逐帧置信度 ✓")
 
 
+def test_load_kp_and_write_roundtrip():
+    """load_kp 组合入口 + write_trc 保形往返。
+
+    夹具用 26 marker 全名表（表头与数据一致，write_trc 的真实使用形态：
+    Sports2D 的 src trc 本就带全量 marker 名），有值槽位 xy 与 conf 不变。
+    """
+    alias = {0: "Nose", 3: "LEar", 4: "REar", 5: "LShoulder", 6: "RShoulder",
+             11: "LHip", 12: "RHip", 13: "LKnee", 14: "RKnee", 15: "LAnkle", 16: "RAnkle"}
+    names = [alias.get(i, f"J{i}") for i in range(26)]
+    xyz = (np.arange(2 * 26 * 3).reshape(2, 26, 3) % 97) * 1.5
+    xyz[1, 5] = np.nan  # 第 2 帧 LShoulder 丢点 → conf 逐帧
+    lines = ["PathFileType\t4\t(X/Y/Z)\tfake.trc",
+             "DataRate\tCameraFrameRate\tNumFrames\tNumMarkers\tUnits",
+             "30.00\t30.00\t2\t26\tm",
+             "Frame\tTime\t" + "\t".join(names), ""]
+    for f in range(2):
+        cells = [str(f + 1), f"{f / 30:.6f}"]
+        for j in range(26):
+            for c in range(3):
+                v = xyz[f, j, c]
+                cells.append("" if np.isnan(v) else f"{v:.6f}")
+        lines.append("\t".join(cells))
+    tmp = Path(tempfile.mkdtemp(prefix="skibot_test_trc_"))
+    p = tmp / "full.trc"
+    p.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    kp = load_kp(p)
+    assert kp.shape == (2, 26, 3)
+    assert set(np.argwhere(kp[0][:, 2] > 0).ravel().tolist()) == set(alias)
+
+    out = tmp / "roundtrip.trc"
+    write_trc_file(kp, p, out)
+    kp2 = load_kp(out)
+    assert (kp2[:, :, 2] == kp[:, :, 2]).all()
+    m = kp[:, :, 2] > 0
+    assert np.allclose(kp2[:, :, :2][m], kp[:, :, :2][m])
+    print("  load_kp / write_trc 保形往返 ✓")
+
+
+def test_write_trc_row_count_guard():
+    p = write_trc(BASIC_TRC)
+    kp = load_kp(p)
+    try:
+        write_trc_file(kp[:-1], p, p.parent / "bad.trc")
+    except ValueError as e:
+        assert "!= kp 帧" in str(e), e
+    else:
+        raise AssertionError("行数不符未抛 ValueError")
+    print("  write_trc 行数守卫 ✓")
+
+
+def test_parse_trc_full_time_column():
+    p = write_trc(BASIC_TRC)
+    names, t, xyz = parse_trc_full(p)
+    assert names == ["Nose", "LHip", "RKnee"], names
+    assert np.allclose(t, [0.0, 0.033333]), t
+    assert xyz.shape == (2, 3, 3)
+    print("  parse_trc_full Time 列 ✓")
+
+
+def test_stitch_blend_and_guard():
+    """缝合：前段取供体、后段取主轨、中间逐关键点线性补插。"""
+    n = 5
+    kp_main = np.zeros((n, 26, 3))
+    kp_donor = np.zeros((n, 26, 3))
+    for f in range(n):
+        kp_main[f, 11] = [100 + f, 200, 1.0]   # L_HIP 主轨
+        kp_donor[f, 11] = [0 + f, 200, 1.0]    # L_HIP 供体
+    merged = stitch(kp_main, kp_donor, donor_last=1, main_first=3)
+    assert (merged[0, 11, 0] == 0.0) and (merged[1, 11, 0] == 1.0)   # 供体段
+    assert merged[2, 11, 0] == 1.0 + 0.5 * (103.0 - 1.0)              # 线性补插：t=0.5
+    assert merged[2, 11, 2] == 1.0                                   # 补插帧 conf=1
+    assert merged[3, 11, 0] == 103.0 and merged[4, 11, 0] == 104.0   # 主轨段
+    # 一侧端点缺点的补插帧：该点不参与混合，保留主轨在该帧的原值
+    kp_donor2 = kp_donor.copy()
+    kp_donor2[1, 11, 2] = 0.0
+    merged2 = stitch(kp_main, kp_donor2, donor_last=1, main_first=3)
+    assert merged2[2, 11, 0] == 102.0 and merged2[2, 11, 2] == 1.0
+    print("  stitch 供体/补插/主轨三段 ✓")
+
+
 if __name__ == "__main__":
     test_parse_trc_basic()
     test_parse_trc_empty_cell_is_nan()
     test_parse_trc_no_data_rows_raises()
     test_keypoints_halpe_aliases_and_slots()
     test_keypoints_halpe_per_frame_conf()
+    test_load_kp_and_write_roundtrip()
+    test_write_trc_row_count_guard()
+    test_parse_trc_full_time_column()
+    test_stitch_blend_and_guard()
     print("全部通过")

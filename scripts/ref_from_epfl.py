@@ -16,22 +16,17 @@ if hasattr(sys.stdout, "reconfigure"):
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "scripts"))
 
 import numpy as np  # noqa: E402
 
-from reconcile_epfl import EPFL_JOINTS, EPFL_TO_HALPE  # noqa: E402
+from skibot.epfl import DATASET_DIR, LABELS_JSON, VIDEOS_DIR, gt_keypoints  # noqa: E402
 from skibot.metrics import METRICS, compute_series  # noqa: E402
 from skibot.reference import load as load_refs  # noqa: E402
 from skibot.view import classify_view  # noqa: E402
 
-LABELS = ROOT / "datasets/epfl_ski2dpose/ski2dpose_labels.json"
-VIDS = ROOT / "datasets/epfl_ski2dpose/videos/Videos"
-OUT = ROOT / "datasets/epfl_ski2dpose/gt_angle_stats.json"
-
-# epfl 'head' 同时喂给 halpe 的 NOSE(0) 和 HEAD(17)：view 分类要鼻子信号，
-# Ski2DPose 的 head 点是头部中心，当鼻子用是可接受的近似
-EPFL_TO_HALPE_VIEW = {**EPFL_TO_HALPE, "head": 0}
+LABELS = ROOT / LABELS_JSON
+VIDS = ROOT / VIDEOS_DIR
+OUT = ROOT / DATASET_DIR / "gt_angle_stats.json"
 
 
 def main() -> int:
@@ -52,12 +47,7 @@ def main() -> int:
             cap.release()
 
             items = sorted(imgs.items(), key=lambda kv: kv[1]["frame_idx"])
-            kp = np.zeros((len(items), 26, 3))
-            for i, (iid, rec) in enumerate(items):
-                for jname, hidx in EPFL_TO_HALPE_VIEW.items():
-                    x, y, vis = rec["annotation"][EPFL_JOINTS.index(jname)]
-                    if vis == 1:
-                        kp[i, hidx] = (x * w, y * h, 1.0)
+            kp = gt_keypoints(items, w, h)
 
             view = classify_view(kp)
             series = compute_series(kp)

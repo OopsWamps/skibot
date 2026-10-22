@@ -1,5 +1,6 @@
 """评估流程测试：python tests/test_assess.py
-assess 是主路径与抢救路径共用的 seam：合成侧面骨架进，报告 dict 出。
+assess 是主路径与抢救路径共用的 seam：合成侧面骨架进，Assessment（报告 +
+序列 + 帧级视角）出。
 """
 
 import sys
@@ -16,7 +17,7 @@ from skibot.assess import assess  # noqa: E402
 from skibot.metrics import SAGITTAL_METRICS  # noqa: E402
 from skibot.reference import load  # noqa: E402
 from skibot.skeleton import (  # noqa: E402
-    L_ANKLE, L_ELBOW, L_HIP, L_KNEE, L_SHOULDER, R_ANKLE, R_ELBOW, R_HIP,
+    L_ANKLE, L_ELBOW, L_HIP, L_KNEE, L_SHOULDER, NOSE, R_ANKLE, R_ELBOW, R_HIP,
     R_KNEE, R_SHOULDER,
 )
 
@@ -42,26 +43,28 @@ def side_view_frames(n: int = 20) -> np.ndarray:
         kp[R_ELBOW] = [106, 150, 0.2]
         kp[L_ANKLE] = [110, 400, 0.9]
         kp[R_ANKLE] = [111, 400, 0.2]
-        kp[0] = [130, 60, 0.9]  # NOSE 偏出肩中点
+        kp[NOSE] = [130, 60, 0.9]  # 偏出肩中点
         frames.append(kp)
     return np.stack(frames)
 
 
 def test_assess_side_view_report():
     refs = load(ROOT / "reference_values.toml")
-    report = assess(side_view_frames(), level="novice", refs=refs, label="t.mp4",
-                    person={"id": 0, "selection": "测试"})
+    res = assess(side_view_frames(), level="novice", refs=refs, label="t.mp4",
+                 person={"id": 0, "selection": "测试"})
+    report = res.report
     assert report["view"]["detected"] == "sagittal", report["view"]
     assert [m["metric"] for m in report["metrics"]] == list(SAGITTAL_METRICS)
     assert report["person"] == {"id": 0, "selection": "测试"}
     assert report["calibrated"] is False and report["notice"]
+    assert (res.frame_view == "l").all()  # 帧级归属与整视频判定一致
     print("  assess：侧面骨架 → 侧面指标 + person 透传 ✓")
 
 
 def test_assess_without_person():
     refs = load(ROOT / "reference_values.toml")
-    report = assess(side_view_frames(), level="novice", refs=refs, label="t.trc")
-    assert "person" not in report  # 抢救路径没有选人环节
+    res = assess(side_view_frames(), level="novice", refs=refs, label="t.trc")
+    assert "person" not in res.report  # 抢救路径没有选人环节
     print("  assess：无 person 字段时不写入报告 ✓")
 
 
@@ -71,9 +74,10 @@ def test_assess_quality_hints():
     frames = side_view_frames()
     frames[:, :, 2] = 0.35  # 全帧低置信度（<0.5）
     frames[:, [L_ANKLE, R_ANKLE], 2] = 0.0  # 踝不参与（坐标 (0,0) 会算出假深蹲）
-    report = assess(frames, level="novice", refs=refs, label="t.mp4",
-                    quality={"person_height_ratio": 0.12,
-                             "low_conf_frame_ratio": 0.9})
+    res = assess(frames, level="novice", refs=refs, label="t.mp4",
+                 quality={"person_height_ratio": 0.12,
+                          "low_conf_frame_ratio": 0.9})
+    report = res.report
     assert "quality" in report
     assert report["quality"]["person_height_ratio"] == 0.12
     assert "偏小" in report["notice"] and "低置信度" in report["notice"], report["notice"]
@@ -85,11 +89,52 @@ def test_assess_quality_hints():
     # 深蹲帧过半 → knee_flexion 带 caveat
     squat = side_view_frames()
     squat[:, [L_ANKLE, R_ANKLE]] = [[180, 290, 0.9], [181, 290, 0.9]]  # 膝弯 ≈82° <90°
-    report2 = assess(squat, level="novice", refs=refs, label="t.mp4")
-    knee2 = next(m for m in report2["metrics"] if m["metric"] == "knee_flexion")
+    res2 = assess(squat, level="novice", refs=refs, label="t.mp4")
+    knee2 = next(m for m in res2.report["metrics"] if m["metric"] == "knee_flexion")
     assert "caveat" in knee2, knee2
-    assert report2["quality"]["deep_squat_frame_ratio"] >= 0.2
+    assert res2.report["quality"]["deep_squat_frame_ratio"] >= 0.2
     print("  assess：深蹲相位 caveat 写入膝弯项 ✓")
+
+
+def test_assess_quality_computed_internally():
+    """frame_height 给到 assess：人物高度占比与低置信度占比内部统计。"""
+    refs = load(ROOT / "reference_values.toml")
+    res = assess(side_view_frames(), level="novice", refs=refs, label="t.mp4",
+                 frame_height=2000.0)
+    q = res.report["quality"]
+    assert q["person_height_ratio"] == 0.17  # bbox 主轴 340px / 2000
+    assert q["low_conf_frame_ratio"] == 0.0  # 核心 8 点里只有右踝 0.2 → 均值 0.9375 ≥ 0.75
+    print("  assess：质量统计内部计算（cli 不再自算）✓")
+
+
+def test_compute_quality_low_conf_boundary():
+    """核心八点 6/8=0.75 不算低置信帧（边界含），5/8=0.625 算。"""
+    from skibot.assess import compute_quality
+
+    kp = np.zeros((1, 26, 3))
+    core = [L_SHOULDER, R_SHOULDER, L_HIP, R_HIP, L_KNEE, R_KNEE, L_ANKLE, R_ANKLE]
+    kp[0, core, 2] = 0.9
+    kp[0, core[-2:], 2] = 0.0            # 缺 2 点 → 6/8 = 0.75，不算
+    assert compute_quality(kp)["low_conf_frame_ratio"] == 0.0
+    kp[0, core[-3], 2] = 0.0             # 缺 3 点 → 5/8 = 0.625，算
+    assert compute_quality(kp)["low_conf_frame_ratio"] == 1.0
+    print("  compute_quality：LOW_CONF_CORE_RATIO 边界 ✓")
+
+
+def test_assess_nosignal_frames_contribute_nothing():
+    """''（无信号）帧在门控下不贡献任何指标 —— "取自侧面帧"对每帧成立。"""
+    refs = load(ROOT / "reference_values.toml")
+    frames = side_view_frames(20)
+    frames[5, NOSE, 2] = 0.0            # 肩/鼻缺失 → 投票 NaN → ''
+    frames[5, [L_SHOULDER, R_SHOULDER], 2] = 0.0
+    res = assess(frames, level="novice", refs=refs, label="t.mp4")
+    assert res.frame_view[5] == ""
+    assert np.isnan(res.series["hip_flexion"][5])   # 无信号帧不算侧面指标
+    assert np.isnan(res.series["shoulder_hip_align"][5])  # 正面指标同样不算
+    assert not np.isnan(res.series["hip_flexion"][0])     # 正常帧照算
+    hip = next(m for m in res.report["metrics"] if m["metric"] == "hip_flexion")
+    assert hip["n_valid_frames"] == 19
+    print("  assess：'' 帧不贡献任何指标 ✓")
 
 
 def frontal_frame() -> np.ndarray:
@@ -105,7 +150,7 @@ def frontal_frame() -> np.ndarray:
     kp[R_ANKLE] = [115, 400, 0.9]
     kp[L_ELBOW] = [80, 150, 0.85]
     kp[R_ELBOW] = [130, 150, 0.85]
-    kp[0] = [105, 60, 0.9]  # NOSE 居中
+    kp[NOSE] = [105, 60, 0.9]  # 居中
     return kp
 
 
@@ -114,9 +159,11 @@ def test_assess_mixed_view():
     refs = load(ROOT / "reference_values.toml")
     side = side_view_frames(10)
     front = np.stack([frontal_frame() for _ in range(10)])
-    report = assess(np.concatenate([side, front]), level="novice", refs=refs,
-                    label="t.mp4")
+    res = assess(np.concatenate([side, front]), level="novice", refs=refs,
+                 label="t.mp4")
+    report = res.report
     assert report["view"]["detected"] == "mixed", report["view"]
+    assert set(res.frame_view) == {"f", "l"}  # 无 '' 帧：两侧信号齐全
     names = [m["metric"] for m in report["metrics"]]
     assert set(names) == {"hip_flexion", "knee_flexion", "trunk_lean",
                           "knee_valgus", "shoulder_hip_align"}, names
@@ -132,5 +179,8 @@ if __name__ == "__main__":
     test_assess_side_view_report()
     test_assess_without_person()
     test_assess_quality_hints()
+    test_assess_quality_computed_internally()
+    test_compute_quality_low_conf_boundary()
+    test_assess_nosignal_frames_contribute_nothing()
     test_assess_mixed_view()
     print("全部通过")
