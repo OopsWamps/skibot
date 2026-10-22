@@ -121,6 +121,12 @@
     误差。回归：Zr4y167oa 从 ambiguous/0 指标 → mixed/五指标全出
     （侧面帧 2797、正面帧 3572）。帧级视角分类（斜 45° 帧的归属
     精度）仍是二期项。
+11. **一期收尾处置**（2026-10-22）：①第一轮 partial 素材 10 条
+    （usable=1，待剪段）正式放弃——博主轮后滑行段样本 20+，
+    边际价值低；判定记录保留在 reviewed.jsonl，二期扩样本可回看。
+    ②环境可复现收尾：pyproject 补 imageio-ffmpeg 与
+    onnxruntime-directml（win32 marker），rtmlib DML 补丁脚本化为
+    scripts/patch_rtmlib_dml.py（幂等，rtmlib 升级后重跑）。
 
 ## 二期待办
 

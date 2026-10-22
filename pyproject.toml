@@ -7,6 +7,8 @@ dependencies = [
     "sports2d>=0.8.31",
     "opencv-python>=4.8,<5",
     "numpy>=1.24",
+    "imageio-ffmpeg>=0.5",                                  # scripts/download_user_footage.py 的 ffmpeg 来源
+    "onnxruntime-directml>=1.19; sys_platform == 'win32'",  # GPU 推理；装后跑 scripts/patch_rtmlib_dml.py（DECISIONS 6）
 ]
 
 [project.scripts]
