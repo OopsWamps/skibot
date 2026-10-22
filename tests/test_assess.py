@@ -166,11 +166,13 @@ def test_assess_mixed_view():
     assert set(res.frame_view) == {"f", "l"}  # 无 '' 帧：两侧信号齐全
     names = [m["metric"] for m in report["metrics"]]
     assert set(names) == {"hip_flexion", "knee_flexion", "trunk_lean",
-                          "knee_valgus", "shoulder_hip_align"}, names
+                          "knee_abduction", "shoulder_hip_align"}, names
     by = {m["metric"]: m for m in report["metrics"]}
     # sagittal 三项只取侧面帧（10），frontal 两项只取正面帧（10）
     assert by["knee_flexion"]["n_valid_frames"] <= 10
     assert by["shoulder_hip_align"]["n_valid_frames"] <= 10
+    assert by["knee_abduction"]["basis"] == "2d"
+    assert by["shoulder_hip_align"]["legacy"] is True
     assert "混合视角" in (report["notice"] or "")
     print("  assess：mixed 视角逐帧门控，五指标各自产出 ✓")
 

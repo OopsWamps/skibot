@@ -1,4 +1,4 @@
-"""自绘标注视频：只画选中者，逐帧全量写出，叠加本项目五指标。
+"""自绘标注视频：只画选中者，逐帧全量写出，叠加二维五项指标（过渡期口径）。
 
 替代 Sports2D 的标注视频（实测两大问题：5 人全画、输出只剩 31/427 帧）。
 骨架画在打码后的画面上（帧号与 trc 一致）；指标数值按参考区间绿/红着色。
@@ -65,9 +65,9 @@ def render_annotated(
     detected = view or assessment.report["view"]["detected"]
     if detected == "mixed":
         # 跟拍混合视角：逐帧门控已保证每个值出自其可信平面，全部指标可画
-        active = list(M.METRICS)
+        active = list(M.TWO_D_METRICS)
     else:
-        active = [m for m, (_, need) in M.METRICS.items() if need == detected]
+        active = [m for m in M.TWO_D_METRICS if M.metric_plane(m) == detected]
     ref_by_metric = {m: lookup(refs, m, level) for m in active}
 
     f = 0
@@ -94,7 +94,7 @@ def _transcode_h264(out_path: Path) -> Path:
     import subprocess
 
     try:
-        import imageio_ffmpeg
+        import imageio_ffmpeg  # type: ignore[import-untyped]
         ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
     except ImportError:
         print("[skibot] imageio_ffmpeg 不可用，标注视频保持 mp4v（浏览器或无法播放）",

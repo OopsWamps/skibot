@@ -2,7 +2,8 @@
 
 决策依据 docs/DECISIONS.md 第 9 条：报告是价值层，标注视频是信任层；不做评分。
 每项指标给出：区间、达标率、一句话判断。参考值未校准期间强制带水印字段。
-指标清单与视角门控消费 metrics.METRICS 注册表。
+指标清单与视角门控消费 metrics.TWO_D_METRICS（二维过渡口径）；三维报告
+的六项指标与相位对象在 issue 12 接入。字段迁移见 docs/report_schema.md。
 """
 
 from __future__ import annotations
@@ -13,7 +14,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .metrics import METRICS
+from .metrics import TWO_D_METRICS, metric_label, metric_plane
 from .reference import LEVELS, MetricRef, lookup, pct_in_range
 
 UNCALIBRATED_NOTICE = "参考区间为未校准的占位初值，本报告仅供自查，不构成教学结论。"
@@ -77,16 +78,17 @@ def build_report(
     # 视角门控：整视频单一视角时按注册表筛；mixed（跟拍混合视角）下
     # sagittal/frontal 指标已在 metrics.compute_series 逐帧门控，两侧都放行
     view = view_result.view
-    for name, (cname, need_view) in METRICS.items():
-        if view not in (need_view, "mixed"):
+    for name in TWO_D_METRICS:
+        if view not in (metric_plane(name), "mixed"):
             continue
         s = series[name]
         ref = lookup(refs, name, level)
         p = pct_in_range(s, ref)
         valid = s[~np.isnan(s)]
-        item = {
+        item: dict[str, object] = {
             "metric": name,
-            "name": cname,
+            "name": metric_label(name),
+            "basis": "2d",
             "reference": [ref.lo, ref.hi],
             "median_deg": None if valid.size == 0 else round(float(np.median(valid)), 1),
             "pct_in_range": None if np.isnan(p) else round(p, 3),
@@ -95,13 +97,21 @@ def build_report(
             "n_valid_frames": int(valid.size),
             "verdict": _verdict(s, ref),
         }
+        if name == "knee_abduction":
+            item["definition"] = "2d_projection"
+            item["note"] = ("二维投影口径（旧 knee_valgus），"
+                            "与三维 JCS 膝内外翻不可直接比较")
+        if name == "shoulder_hip_align":
+            item["legacy"] = True
+            item["replaced_by"] = ["hip_shoulder_separation", "thoraco_pelvic_obliquity"]
+            item["note"] = "旧合并口径；三维报告拆成横断面 H-SEP 与冠状面 obliquity"
         if name == "knee_flexion" and not np.isnan(squat) and squat >= DEEP_SQUAT_RATIO_WARN:
             item["caveat"] = (f"深蹲相位帧占 {squat*100:.0f}%，2D 投影在此相位放大膝弯误差，"
                               "数值仅供参考")
         metrics_out.append(item)
 
     report = {
-        "schema": "skibot.report/0.1",
+        "schema": "skibot.report/0.2",
         "generated_at": _dt.datetime.now().isoformat(timespec="seconds"),
         "video": str(video),
         "level": level,
@@ -112,6 +122,9 @@ def build_report(
             "躯干前倾角以图像竖直方向为零基准，未做相机倾斜校正；"
             "坡面坡度与相机不水平会以表观前倾进入读数",
             "角度约定与 Sports2D 一致（见 reference_values.toml 头部）",
+            "指标基准为二维投影（basis=2d）：knee_abduction 是旧 knee_valgus 的"
+            "二维口径，与三维 JCS 不可直接比较；shoulder_hip_align 是旧合并口径，"
+            "三维报告拆成 H-SEP 与 obliquity（ADR-0001）",
         ],
         "calibrated": calibrated,
         "notice": " ".join(notices) if notices else None,

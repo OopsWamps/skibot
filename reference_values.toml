@@ -1,4 +1,4 @@
-# 五项指标的三档参考区间（单位：度）
+# 二维五项指标的三档参考区间（单位：度；过渡期口径，basis=2d）
 #
 # ⚠️ 数值来源（2026-10-20 产品负责人批准）：
 #   advanced  = EPFL Ski2DPose 世界杯竞技者人工标注的 p25~p75（全程跨相位粗带，
@@ -11,8 +11,13 @@
 #   hip_flexion        肩-髋-膝夹角，直立 ≈180°，屈髋变小
 #   knee_flexion       髋-膝-踝夹角，直立 ≈180°，屈膝变小
 #   trunk_lean         躯干节段与竖直方向偏角，直立 ≈0°
-#   knee_valgus        髋-膝-踝夹角，腿直 ≈180°，内扣变小
-#   shoulder_hip_align 肩线与髋线夹角，对齐 ≈0°
+#   knee_abduction     二维投影：髋-膝-踝夹角，腿直 ≈180°，内扣变小
+#                      （旧名 knee_valgus 作别名保留；三维 JCS 定义见 ADR-0001 §5.5）
+#   shoulder_hip_align 旧合并口径：肩线与髋线夹角，对齐 ≈0°
+#                      三维拆成 hip_shoulder_separation 与 thoraco_pelvic_obliquity
+#
+# 二期三维六项指标的相位带由 ADR-0002 生成，尚未写入本文件；本文件的带
+# 全部是二维口径，报告以 basis=2d 标注。
 
 [hip_flexion.novice]
 range = [135, 165]
@@ -53,21 +58,23 @@ range = [8, 22]
 [trunk_lean.advanced]  # 竞技 p25~p75：21.6~49.2
 range = [22, 49]
 
-[knee_valgus.novice]
+[knee_abduction.novice]
 range = [160, 180]
 # 2026-10-21 AI 模拟教练评审（docs/coach_review_simulated.md）：正面髋-膝-踝夹角
 # 含屈曲深度投影（advanced 带 [94,153] 与膝弯带 [97,153] 几乎重合为证），
-# 不能把"小于 180°"直接解读为内扣错误。文案降级为描述统计，更名留二期。
+# 不能把"小于 180°"直接解读为内扣错误。2026-10-23 已更名为 knee_abduction，
+# 本节仍是二维投影口径；三维 JCS 带待 issue 12。
 verdict_low = "正面膝角低于参考带（含屈膝深度的投影成分，不等同于内扣错误，请结合标注视频自查）"
 verdict_high = "正面膝角高于参考带（比参考带更接近伸直）"
 verdict_ok = "正面膝角在参考带内（作描述统计参考，不等同于力线判定）"
 
-[knee_valgus.intermediate]
+[knee_abduction.intermediate]
 range = [165, 180]
 
-[knee_valgus.advanced]  # 竞技 p25~p75：94.2~152.7
+[knee_abduction.advanced]  # 竞技 p25~p75：94.2~152.7
 range = [94, 153]
 
+# 遗留二维合并口径；三维拆成 H-SEP 与 obliquity（ADR-0001 §5.6/5.7）。
 [shoulder_hip_align.novice]
 range = [0, 20]
 verdict_high = "肩髋旋转错位大，上身与下身脱节，先转髋再带动肩"

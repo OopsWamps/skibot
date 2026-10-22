@@ -30,7 +30,8 @@ def _report_dict() -> dict:
         "quality": {"person_height_ratio": 0.3, "low_conf_frame_ratio": 0.1,
                     "deep_squat_frame_ratio": 0.0},
         "metrics": [
-            {"metric": "knee_flexion", "name": "膝弯曲角", "reference": [140, 170],
+            {"metric": "knee_flexion", "name": "膝弯曲角", "basis": "2d",
+             "definition": "髋-膝-踝夹角", "reference": [140, 170],
              "median_deg": 155.0, "pct_in_range": 0.5, "band_percentile": 50.0,
              "n_valid_frames": 100, "verdict": "膝弯曲角在参考带内"}],
         "person": {"id": 0, "selection": "测试选人"},
@@ -87,6 +88,7 @@ def test_web_flow(tmp: Path):
     body = page.text
     assert "膝弯曲角" in body and "155.0" in body and "测试水印" in body
     assert "50.0" in body and f"{tid}_annotated.mp4" in body
+    assert "基准 2d" in body and "髋-膝-踝夹角" in body  # basis/definition 进报告页
 
     # 任务列表页含完成条目
     assert client.get("/tasks").status_code == 200

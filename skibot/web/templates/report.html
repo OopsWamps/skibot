@@ -20,6 +20,13 @@
   <h2>{{ m.name }}（{{ m.metric }}）
     <span style="float:right;font-weight:normal;font-size:14px" class="muted">{{ m.verdict }}</span>
   </h2>
+  {% if m.basis %}
+  <p class="muted" style="font-size:13px;margin:0">
+    基准 {{ m.basis }}{% if m.definition %} · {{ m.definition }}{% endif %}
+    {% if m.legacy %} · 遗留项：三维报告以 {{ m.replaced_by | join(" / ") }} 替代{% endif %}
+  </p>
+  {% endif %}
+  {% if m.note %}<p class="muted" style="font-size:13px;margin:0">{{ m.note }}</p>{% endif %}
   {% if m.median_deg is not none %}
   <p style="font-size:26px;margin:6px 0">
     {{ m.median_deg }}°

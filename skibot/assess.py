@@ -1,10 +1,11 @@
-"""评估流程：关键点 → 视角分类 → 五指标 → 参考区间 → 评估结果。
+"""评估流程：关键点 → 视角分类 → 二维五指标 → 可选三维骨架 → 参考区间。
 
 主路径（cli 选完人后）与抢救路径（scripts/report_from_trc.py）共用同一条
 流程 —— 一期 #10 的量角对账走抢救路径，行为必须与主路径一致。
 Assessment 是唯一出口：报告、角度序列、帧级视角归属一次算齐整体交付，
-render 等下游收现成结果，不再重算。二期弯相位划分（docs/DECISIONS.md
-二期待办）在此插入。
+render 等下游收现成结果，不再重算。传入 lifter 时同一出口多带一份
+Skeleton3D；二维输出不因三维而改变（issue 03）。二期弯相位划分与三维
+指标（issue 04/10/12）在此插入。
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ import numpy as np
 
 from . import metrics as M
 from .skeleton import CORE_JOINTS, size_score
+from .skeleton3d import Lifter, Skeleton3D
 from .report import build_report
 from .view import classify_view, classify_view_frames
 
@@ -23,14 +25,16 @@ LOW_CONF_CORE_RATIO = 0.75  # 核心八点有效占比低于此值的帧记为�
 
 @dataclass
 class Assessment:
-    """评估结果三件套：报告 dict、逐帧指标序列、帧级视角归属。
+    """评估结果：报告 dict、二维序列、帧级视角归属、可选三维骨架。
 
     下游（render、对账脚本）消费这个整体，不要自己再算 series/frame_view
-    —— 报告与叠加层必须出自同一次计算。
+    —— 报告与叠加层必须出自同一次计算。skeleton3d 只在传入 lifter 时存在；
+    它不改变二维报告与序列。
     """
     report: dict
     series: dict[str, np.ndarray]
     frame_view: np.ndarray
+    skeleton3d: Skeleton3D | None = None
 
 
 def compute_quality(keypoints: np.ndarray, frame_height: float | None = None) -> dict:
@@ -51,17 +55,24 @@ def compute_quality(keypoints: np.ndarray, frame_height: float | None = None) ->
 def assess(keypoints: np.ndarray, *, level: str,
            refs: dict, label: str,
            person: dict | None = None, calibrated: bool = False,
-           quality: dict | None = None, frame_height: float | None = None) -> Assessment:
+           quality: dict | None = None, frame_height: float | None = None,
+           lifter: Lifter | None = None) -> Assessment:
     """keypoints: (frames, n_kp, >=3)，skeleton 契约。返回评估结果（不落盘）。
 
     quality：调用方追加的质量统计项（同名键优先于内部统计）。
+    lifter：可选的二维→三维适配器。传入时 Assessment 多带 Skeleton3D；
+    二维报告、序列与视角归属逐位不变。
     """
     frame_view = classify_view_frames(keypoints)
     vr = classify_view(keypoints, frame_view=frame_view)
     series = M.compute_series(keypoints, frame_view=frame_view)
+    sk3 = lifter.lift(keypoints) if lifter is not None else None
+    if sk3 is not None and sk3.n_frames != keypoints.shape[0]:
+        raise ValueError(f"三维骨架帧数 {sk3.n_frames} != 二维关键点帧数 {keypoints.shape[0]}")
     q = dict(quality) if quality else {}
     for k, v in compute_quality(keypoints, frame_height).items():
         q.setdefault(k, v)
     report = build_report(label, vr, series, refs, level,
                           person=person, calibrated=calibrated, quality=q)
-    return Assessment(report=report, series=series, frame_view=frame_view)
+    return Assessment(report=report, series=series, frame_view=frame_view,
+                      skeleton3d=sk3)

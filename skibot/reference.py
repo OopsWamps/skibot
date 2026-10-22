@@ -11,6 +11,8 @@ from pathlib import Path
 
 import numpy as np
 
+from .metrics import resolve_metric
+
 LEVELS = ("novice", "intermediate", "advanced")
 
 
@@ -43,10 +45,17 @@ def load(path: str | Path) -> dict[str, dict[str, MetricRef]]:
 
 
 def lookup(refs: dict[str, dict[str, MetricRef]], metric: str, level: str) -> MetricRef:
-    """查询某指标某档区间。缺档时回退到 novice（最宽区间，保守）。"""
-    if metric not in refs:
+    """查询某指标某档区间。缺档时回退到 novice（最宽区间，保守）。
+
+    旧名按别名解析（knee_valgus → knee_abduction）。旧 TOML 只有旧键时
+    回退到旧键本身，不要求表文件先迁移。
+    """
+    key = resolve_metric(metric)
+    if key not in refs and metric in refs:
+        key = metric
+    if key not in refs:
         raise KeyError(f"参考区间表中没有指标: {metric}")
-    by_level = refs[metric]
+    by_level = refs[key]
     if level not in by_level:
         if level not in LEVELS:
             raise ValueError(f"未知水平档: {level}，可选 {LEVELS}")

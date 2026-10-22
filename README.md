@@ -50,6 +50,7 @@ skibot/
 ├── backend.py        # Sports2D 适配：调用（DML GPU/限 8 人/7200s 超时）、产物发现、抢救契约
 ├── trc_io.py         # trc 格式解析 + Halpe-26 重排
 ├── skeleton.py       # Halpe-26 布局契约：索引、别名、肢体链、conf 语义
+├── skeleton3d.py     # 三维骨架契约（root-relative/重力/置信度）+ 提升适配器接口
 ├── select_person.py  # 主轨迹选择（尺寸/位移/颜色打分）
 ├── view.py           # 视角分类：整视频判定 + 帧级归属（跟拍混合视角）
 ├── metrics.py        # 五项体态指标计算 + 指标注册表（支持帧级视角门控）
@@ -60,6 +61,8 @@ skibot/
 └── privacy.py        # 人脸打码
 reference_values.toml   # 参考区间表（novice/intermediate 为占位值；advanced 为 EPFL 竞技 p25~p75）
 docs/DECISIONS.md       # 全部产品与技术决策记录
+docs/adr/               # 架构决策记录（三维指标定义、参考带口径）
+docs/report_schema.md   # 报告 schema 迁移（0.1 → 0.2，旧名兼容）
 docs/coach_review_simulated.md   # AI 模拟教练评审（待真人终审）
 docs/lit_angle_values.md         # 文献角度数值汇集
 docs/GLOSSARY.md        # 领域词汇表
@@ -81,5 +84,11 @@ trc 反查连续滑行段。入口：`fetch_user_footage.py`、`fetch_channel_fo
 
 ## 一期范围
 
-分析五项指标：屈髋角、膝弯曲角、躯干前倾角（侧面视频）；膝盖内扣角、肩髋对齐（正面视频）。
-弯相位划分、单目 3D、评分制、Web UI、knee_valgus 更名均在二期（见 docs/DECISIONS.md）。
+分析五项二维指标：屈髋角、膝弯曲角、躯干前倾角（侧面视频）；膝盖内扣角、肩髋对齐（正面视频）。
+一期口径是图像平面角度，相机方位会进入读数（见 docs/DECISIONS.md #3）。
+
+## 二期（进行中）
+
+规格与任务票在 `.scratch/phase-2/`。指标迁到三维骨架，按入弯/控制/出弯分相位，
+参考带增加相位维度；三维定义与参考带口径已冻结在 `docs/adr/`。
+Web 的任务持久化与报告页改选人物是并行项，不依赖三维口径。评分制仍不做。

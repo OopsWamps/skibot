@@ -34,14 +34,15 @@ def test_angle_math():
     assert abs(s["hip_flexion"][0] - 180.0) < 1e-6, s["hip_flexion"]
     assert abs(s["knee_flexion"][0] - 180.0) < 1e-6
     assert abs(s["trunk_lean"][0] - 0.0) < 1e-6
-    assert abs(s["knee_valgus"][0] - 180.0) < 1e-6
+    assert abs(s["knee_abduction"][0] - 180.0) < 1e-6
+    assert s["knee_valgus"] is s["knee_abduction"]  # 旧名兼容别名
     assert abs(s["shoulder_hip_align"][0] - 0.0) < 1e-6
 
     # 膝盖向内推 20px → valgus < 180；关键点置信度过低 → NaN
     f2 = kp({5: (110, 100), 11: (110, 200), 13: (130, 300), 15: (110, 400),
              6: (120, 100), 12: (120, 200), 14: (120, 300), 16: (120, 400)})
     s2 = M.compute_series(f2[None])
-    assert s2["knee_valgus"][0] < 175.0
+    assert s2["knee_abduction"][0] < 175.0
     # 只有左侧骨架且左髋置信度过低 → 换边无可换，hip_flexion 应为 NaN
     f3 = kp({5: (110, 100), 11: (110, 200), 13: (110, 300), 15: (110, 400)})
     f3[M.L_HIP, 2] = 0.1
@@ -75,27 +76,63 @@ def test_view_classification():
     print("  视角分类 ✓")
 
 
+def test_metric_registry():
+    """六项规范指标、基准标识、旧名别名与遗留键。"""
+    assert tuple(M.METRICS) == (
+        "hip_flexion", "knee_flexion", "trunk_lean", "knee_abduction",
+        "hip_shoulder_separation", "thoraco_pelvic_obliquity",
+    )
+    assert set(M.metrics_for_basis("3d")) == set(M.METRICS)
+    assert M.metrics_for_basis("2d") == M.TWO_D_METRICS
+    assert M.resolve_metric("knee_valgus") == "knee_abduction"
+    assert M.metric_label("knee_abduction") == "膝内外翻角"
+    assert M.metric_plane("thoraco_pelvic_obliquity") == "frontal"
+    assert "shoulder_hip_align" not in M.METRICS  # 遗留键不在六项里
+    assert M.LEGACY_METRICS["shoulder_hip_align"].replaced_by == (
+        "hip_shoulder_separation", "thoraco_pelvic_obliquity")
+    assert M.METRICS["knee_abduction"].bases == ("2d", "3d")
+    assert M.METRICS["knee_abduction"].phase is False
+    assert M.METRICS["hip_flexion"].phase is True
+    assert M.METRICS["hip_shoulder_separation"].bases == ("3d",)
+    print("  指标注册表：六项 / 基准 / 别名 ✓")
+
+
 def test_reference_and_report():
     refs = load(Path(__file__).resolve().parent.parent / "reference_values.toml")
     ref = lookup(refs, "hip_flexion", "advanced")
     s = np.full(50, 150.0)
     assert pct_in_range(np.full(50, 100.0), ref) == 1.0  # 100 在竞技 p25~p75 [66,135] 内
     assert np.isnan(pct_in_range(np.full(10, np.nan), ref))
+    # 旧名别名查询到同一条带
+    assert lookup(refs, "knee_valgus", "advanced").lo == lookup(
+        refs, "knee_abduction", "advanced").lo
 
+    series = {"hip_flexion": s, "knee_flexion": s, "trunk_lean": np.full(50, 12.0),
+              "knee_abduction": s, "shoulder_hip_align": s}
     vr = ViewResult("sagittal", 0.8, 50, {})
-    report = build_report("test.mp4", vr,
-                          {"hip_flexion": s, "knee_flexion": s, "trunk_lean": np.full(50, 12.0),
-                           "knee_valgus": s, "shoulder_hip_align": s},
-                          refs, "novice")
+    report = build_report("test.mp4", vr, series, refs, "novice")
     assert report["calibrated"] is False and report["notice"]
+    assert report["schema"] == "skibot.report/0.2"
     names = [m["metric"] for m in report["metrics"]]
     assert names == ["hip_flexion", "knee_flexion", "trunk_lean"], names  # 侧面不出正面指标
     assert report["metrics"][0]["pct_in_range"] == 1.0
+    assert all(m["basis"] == "2d" for m in report["metrics"])
+
+    # 正面报告：knee_abduction 带二维投影说明；肩髋对齐是遗留合并项
+    vr_f = ViewResult("frontal", 0.8, 50, {})
+    report_f = build_report("test.mp4", vr_f, series, refs, "novice")
+    by = {m["metric"]: m for m in report_f["metrics"]}
+    assert set(by) == {"knee_abduction", "shoulder_hip_align"}, by.keys()
+    assert by["knee_abduction"]["definition"] == "2d_projection"
+    assert by["shoulder_hip_align"]["legacy"] is True
+    assert by["shoulder_hip_align"]["replaced_by"] == [
+        "hip_shoulder_separation", "thoraco_pelvic_obliquity"]
     print("  参考区间与报告 ✓")
 
 
 if __name__ == "__main__":
     test_angle_math()
+    test_metric_registry()
     test_view_classification()
     test_reference_and_report()
     print("全部通过")
