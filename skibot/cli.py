@@ -135,7 +135,21 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--refs", type=Path, default=DEFAULT_REFS,
                    help="参考区间表路径")
 
+    w = sub.add_parser("serve", help="启动 Web 壳（上传页 + 任务页 + 报告页）")
+    w.add_argument("--port", type=int, default=8000, help="监听端口（默认 8000）")
+    w.add_argument("--host", default="127.0.0.1", help="监听地址（默认本机）")
+    w.add_argument("--result-dir", type=Path, default=Path("web_results"),
+                   help="分析产物目录（默认 web_results/）")
+
     args = parser.parse_args(argv)
+
+    if args.cmd == "serve":
+        import uvicorn
+
+        from .web.app import create_app
+        uvicorn.run(create_app(args.result_dir), host=args.host, port=args.port,
+                    log_level="info")
+        return 0
 
     if args.cmd == "render":
         kp = load_kp(args.trc)

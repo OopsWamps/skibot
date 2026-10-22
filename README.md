@@ -24,7 +24,15 @@ skibot analyze video.mp4 --level intermediate
 skibot analyze <video...> [--level novice|intermediate|advanced]
               [--no-blur] [--result-dir DIR] [--color pink] [--person 3] [--refs TOML]
 skibot render --video v.mp4 --trc t.trc --out o.mp4 [--view sagittal|frontal]
+skibot serve [--port 8000] [--host 127.0.0.1] [--result-dir web_results]
 ```
+
+## Web 壳
+
+`skibot serve` 后浏览器开 `http://127.0.0.1:8000`：上传页（视频 + 水平档 +
+打码开关）→ 任务页（排队/分析中/完成，自动刷新）→ 报告页（五指标卡、
+带内百分位条、质量提示、标注视频播放）。分析在后台单线程排队；
+任务表在内存，服务重启后重新上传同视频即可恢复查看。
 
 - 默认开启人脸打码（Haar，雪镜/面罩召回有限，见 `privacy.py` 说明）
 - 长视频（>10000 帧）建议先降采样到 15fps 再分析（`ffmpeg -vf fps=15`），

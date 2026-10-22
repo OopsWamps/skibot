@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}skibot{% endblock %}</title>
+<style>
+  :root { --ink:#1a2b3c; --sub:#6b7a8c; --line:#e3e8ee; --bg:#f5f7fa;
+          --card:#fff; --green:#2e9e5b; --red:#d64545; --amber:#b8860b; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Segoe UI","Microsoft YaHei",sans-serif;
+         background:var(--bg); color:var(--ink); }
+  nav { background:var(--card); border-bottom:1px solid var(--line);
+        padding:0 24px; display:flex; gap:20px; align-items:center; }
+  nav .brand { font-weight:700; font-size:18px; padding:14px 0; }
+  nav a { color:var(--sub); text-decoration:none; padding:16px 4px; }
+  nav a.active { color:var(--ink); border-bottom:2px solid var(--ink); }
+  main { max-width:880px; margin:24px auto; padding:0 16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px;
+          padding:20px 24px; margin-bottom:16px; }
+  .btn { background:var(--ink); color:#fff; border:none; border-radius:6px;
+         padding:10px 22px; font-size:15px; cursor:pointer; }
+  .btn:disabled { opacity:.5; cursor:default; }
+  .notice { background:#fdf6e3; border:1px solid #ecd9a0; border-radius:6px;
+            padding:10px 14px; color:var(--amber); font-size:14px; margin-bottom:14px; }
+  .error { background:#fdecec; border:1px solid #f0b6b6; border-radius:6px;
+           padding:10px 14px; color:var(--red); font-size:14px; margin-bottom:14px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); }
+  .st-done { color:var(--green); } .st-running { color:var(--amber); }
+  .st-failed { color:var(--red); } .st-queued { color:var(--sub); }
+  h1 { font-size:20px; } h2 { font-size:16px; margin:0 0 12px; }
+  .muted { color:var(--sub); font-size:13px; }
+</style>
+</head>
+<body>
+<nav>
+  <span class="brand">ski·bot</span>
+  <a href="/" {% if active == 'upload' %}class="active"{% endif %}>上传分析</a>
+  <a href="/tasks" {% if active == 'tasks' %}class="active"{% endif %}>任务</a>
+</nav>
+<main>
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>

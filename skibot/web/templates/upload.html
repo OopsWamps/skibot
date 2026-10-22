@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}上传分析 · skibot{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>上传滑雪视频</h1>
+  <p class="muted">mp4/mov/m4v/avi；分析在服务器排队执行，分钟级，完成后在任务页查看报告。</p>
+  <form id="f">
+    <p><input type="file" name="video" accept=".mp4,.mov,.m4v,.avi" required
+              style="margin-top:6px"></p>
+    <p>
+      水平档：
+      <select name="level">
+        <option value="novice">novice（初学）</option>
+        <option value="intermediate" selected>intermediate（中级）</option>
+        <option value="advanced">advanced（竞技）</option>
+      </select>
+      <label style="margin-left:18px">
+        <input type="checkbox" name="blur" checked> 人脸打码
+      </label>
+    </p>
+    <p><button class="btn" id="go" type="submit">开始分析</button>
+       <span id="msg" class="muted" style="margin-left:12px"></span></p>
+  </form>
+</div>
+<script>
+document.getElementById('f').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('go'), msg = document.getElementById('msg');
+  btn.disabled = true; msg.textContent = '上传中…';
+  try {
+    const r = await fetch('/api/upload', {method: 'POST', body: new FormData(e.target)});
+    const j = await r.json();
+    if (!r.ok) { msg.textContent = j.detail || '上传失败'; btn.disabled = false; return; }
+    location.href = '/tasks';
+  } catch (err) { msg.textContent = '上传失败：' + err; btn.disabled = false; }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}报告 · {{ task.video_name }} · skibot{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>{{ task.video_name }}</h1>
+  <p class="muted">
+    水平档 {{ report.level }} · 视角判定 {{ report.view.detected }}
+    （score {{ report.view.score }}，{{ report.view.n_valid_frames }} 有效帧）
+    · 生成于 {{ report.generated_at }}
+    {% if report.person %} · 选中 {{ report.person.selection }}{% endif %}
+  </p>
+  {% if report.notice %}<div class="notice">{{ report.notice }}</div>{% endif %}
+  {% if report.quality %}
+  <p class="muted">质量：{{ report.quality | tojson }}</p>
+  {% endif %}
+</div>
+
+{% for m in metrics %}
+<div class="card">
+  <h2>{{ m.name }}（{{ m.metric }}）
+    <span style="float:right;font-weight:normal;font-size:14px" class="muted">{{ m.verdict }}</span>
+  </h2>
+  {% if m.median_deg is not none %}
+  <p style="font-size:26px;margin:6px 0">
+    {{ m.median_deg }}°
+    <span class="muted" style="font-size:14px">
+      参考带 {{ m.reference[0] }}~{{ m.reference[1] }}°
+      · 达标帧 {{ (m.pct_in_range * 100) | round(0) | int }}%
+      · 有效 {{ m.n_valid_frames }} 帧
+    </span>
+  </p>
+  {% if m.band_percentile is not none %}
+  <div style="position:relative;height:10px;background:var(--line);border-radius:5px;margin:10px 0 4px">
+    <div style="position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:5px;
+                background:linear-gradient(90deg,#dfe9f5,#c4d6ee)"></div>
+    <div style="position:absolute;top:-4px;width:4px;height:18px;border-radius:2px;
+                background:var(--ink);
+                left:{{ [m.band_percentile, 100] | min if m.band_percentile >= 0 else 0 }}%;
+                {% if m.band_percentile < 0 %}left:-2px;background:var(--red);
+                {% elif m.band_percentile > 100 %}left:calc(100% - 2px);background:var(--red);{% endif %}">
+    </div>
+  </div>
+  <div class="muted">带内百分位 {{ m.band_percentile }}（0 = 带下沿，100 = 带上沿）</div>
+  {% endif %}
+  {% else %}
+  <p class="muted">有效数据不足，无法判断</p>
+  {% endif %}
+  {% if m.caveat %}<p style="color:var(--red);font-size:14px">{{ m.caveat }}</p>{% endif %}
+</div>
+{% endfor %}
+
+<div class="card">
+  <h2>标注视频</h2>
+  <video controls style="width:100%;border-radius:6px" src="{{ annotated_url }}"></video>
+</div>
+
+<div class="card">
+  <h2>假设与口径</h2>
+  <ul class="muted" style="margin:0;padding-left:18px">
+    {% for a in report.assumptions %}<li>{{ a }}</li>{% endfor %}
+  </ul>
+  <p class="muted" style="margin-bottom:0">
+    <a href="/api/tasks/{{ task.id }}">任务 JSON</a> ·
+    <a href="/tasks">返回任务列表</a>
+  </p>
+</div>
+{% endblock %}
