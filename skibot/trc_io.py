@@ -13,9 +13,22 @@ import numpy as np
 from .skeleton import NAME_ALIASES
 
 
+def _read_text_tolerant(path: str | Path) -> str:
+    """读 trc 文本：UTF-8 优先，失败退回 GBK。
+
+    Sports2D 在 Windows 中文系统上把头部路径按系统默认编码（GBK）写盘，
+    数据行是纯 ASCII 不受影响；之前只用 ASCII 文件名的素材一直没暴露。
+    """
+    raw = Path(path).read_bytes()
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError:
+        return raw.decode("gbk", errors="replace")
+
+
 def parse_trc_full(path: str | Path) -> tuple[list[str], np.ndarray, np.ndarray]:
     """解析 OpenSim .trc 全量：返回 (marker 名, Time 列 (T,), (frames, markers, 3))。"""
-    lines = Path(path).read_text(encoding="utf-8").splitlines()
+    lines = _read_text_tolerant(path).splitlines()
     data_rows, times, names = [], [], []
     for i, ln in enumerate(lines):
         cells = ln.split("\t")

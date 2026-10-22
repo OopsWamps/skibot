@@ -51,17 +51,19 @@ def test_web_flow(tmp: Path):
                     data={"level": "novice", "blur": "off"})
     assert r.status_code == 200, r.text
     tid = r.json()["task_id"]
-    saved = tmp / "web_results" / "uploads" / tid / "clip.mp4"
+    # 落盘为 ASCII 的 <task_id>.mp4（中文原名只作显示名，避免 trc 头 GBK 问题）
+    saved = tmp / "web_results" / "uploads" / tid / f"{tid}.mp4"
     assert saved.exists() and saved.read_bytes() == b"fake"
+    assert client.get(f"/api/tasks/{tid}").json()["video"] == "clip.mp4"
 
-    # 假字节分析必然失败进表（不拖垮服务）
-    deadline = time.time() + 5
+    # 假字节分析必然失败进表（不拖垮服务）；等 Sports2D 子进程启动失败，约十几秒
+    deadline = time.time() + 90
     t = {"status": tasks_mod.STATUS_QUEUED}
     while time.time() < deadline:
         t = client.get(f"/api/tasks/{tid}").json()
         if t["status"] == tasks_mod.STATUS_FAILED:
             break
-        time.sleep(0.1)
+        time.sleep(0.5)
     assert t["status"] == tasks_mod.STATUS_FAILED, t
     assert "Error" in t["error"] or "error" in t["error"].lower() or t["error"]
 
@@ -73,19 +75,18 @@ def test_web_flow(tmp: Path):
     # 报告页：注入完成态（真渲染路径）
     board = client.app.state.board
     task = board.get(tid)
-    work = task.report_path.parent if task.report_path else tmp / "web_results" / task.video_path.parent.name
-    work = tmp / "web_results" / "clip"
+    work = tmp / "web_results" / tid  # analyze_one 的结果子目录 = video.stem = task_id
     work.mkdir(parents=True, exist_ok=True)
     (work / "report.json").write_text(json.dumps(_report_dict(), ensure_ascii=False),
                                       encoding="utf-8")
-    (work / "clip_annotated.mp4").write_bytes(b"fake")
+    (work / f"{tid}_annotated.mp4").write_bytes(b"fake")
     task.report_path = work / "report.json"
     task.status = tasks_mod.STATUS_DONE
     page = client.get(f"/report/{tid}")
     assert page.status_code == 200
     body = page.text
     assert "膝弯曲角" in body and "155.0" in body and "测试水印" in body
-    assert "50.0" in body and "clip_annotated.mp4" in body
+    assert "50.0" in body and f"{tid}_annotated.mp4" in body
 
     # 任务列表页含完成条目
     assert client.get("/tasks").status_code == 200

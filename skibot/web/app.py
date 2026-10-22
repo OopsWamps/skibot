@@ -42,16 +42,20 @@ def create_app(result_dir: Path) -> FastAPI:
         if level not in LEVELS:
             raise HTTPException(400, f"未知水平档: {level}")
         name = Path(video.filename or "").name
-        if not name.lower().endswith((".mp4", ".mov", ".m4v", ".avi")):
+        suffix = Path(name).suffix.lower()
+        if suffix not in (".mp4", ".mov", ".m4v", ".avi"):
             raise HTTPException(400, "仅支持 mp4/mov/m4v/avi 视频")
         task_id = uuid.uuid4().hex[:12]
         dest_dir = result_dir / "uploads" / task_id
         dest_dir.mkdir(parents=True, exist_ok=True)
-        dest = dest_dir / name
+        # 落盘用 ASCII 名 <task_id>.<ext>：中文文件名会让 Sports2D 在中文系统
+        # 上把 trc 头部按 GBK 写盘；带 task_id 保证 analyze_one 的结果子目录
+        # （result_dir/<video.stem>）逐任务唯一，重启恢复时 id 与目录名一致。
+        dest = dest_dir / f"{task_id}{suffix}"
         with dest.open("wb") as fh:  # 分块落盘，上传文件可达数百 MB
             while chunk := await video.read(1 << 20):
                 fh.write(chunk)
-        board.enqueue(task_id, dest, dest.name, level, blur == "on")
+        board.enqueue(task_id, dest, name, level, blur == "on")  # 显示名保留原名
         return {"task_id": task_id}
 
     @app.get("/tasks", response_class=HTMLResponse)
