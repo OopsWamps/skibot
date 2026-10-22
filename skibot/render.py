@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import cv2
@@ -82,6 +83,36 @@ def render_annotated(
 
     cap.release()
     writer.release()
+    return _transcode_h264(out_path)
+
+
+def _transcode_h264(out_path: Path) -> Path:
+    """mp4v 浏览器 <video> 不支持，转 H.264 + yuv420p + faststart。
+
+    转码失败（ffmpeg 缺失等）保留原文件并降级——本地播放器仍可播 mp4v。
+    """
+    import subprocess
+
+    try:
+        import imageio_ffmpeg
+        ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
+    except ImportError:
+        print("[skibot] imageio_ffmpeg 不可用，标注视频保持 mp4v（浏览器或无法播放）",
+              file=sys.stderr)
+        return out_path
+
+    tmp = out_path.with_suffix(".h264.mp4")
+    r = subprocess.run(
+        [ffmpeg, "-y", "-loglevel", "error", "-i", str(out_path),
+         "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+         str(tmp)],
+        check=False, capture_output=True)
+    if r.returncode == 0 and tmp.exists() and tmp.stat().st_size > 0:
+        tmp.replace(out_path)
+    else:
+        tmp.unlink(missing_ok=True)
+        print(f"[skibot] 标注视频 H.264 转码失败，保留 mp4v：{r.stderr[-200:]!r}",
+              file=sys.stderr)
     return out_path
 
 

@@ -43,8 +43,32 @@ class TaskBoard:
         self._order: list[str] = []
         self._lock = threading.Lock()
         self._cv = threading.Condition(self._lock)
+        self._restore()
         self._worker = threading.Thread(target=self._loop, daemon=True)
         self._worker.start()
+
+    def _restore(self) -> None:
+        """服务重启后从结果目录重建已完成任务——历史报告重启后仍可访问。
+
+        任务 id 取视频 stem（与 report.json 所在目录同名）；上传期任务
+        （uploads/ 下）无法恢复执行状态，不重建。
+        """
+        import json
+
+        for rp in sorted(self.result_dir.glob("*/report.json")):
+            stem = rp.parent.name
+            if stem in self._tasks:
+                continue
+            try:
+                level = json.loads(rp.read_text(encoding="utf-8")).get("level",
+                                                                       "intermediate")
+            except Exception:
+                level = "intermediate"
+            task = Task(id=stem, video_path=rp.parent / f"{stem}.mp4",
+                        video_name=stem, level=level, blur=False,
+                        status=STATUS_DONE, report_path=rp)
+            self._tasks[stem] = task
+            self._order.append(stem)
 
     def enqueue(self, task_id: str, video_path: Path, video_name: str,
                 level: str, blur: bool) -> Task:
