@@ -54,7 +54,7 @@ reference_values.toml   # 参考区间表（novice/intermediate 为占位值；a
 docs/DECISIONS.md       # 全部产品与技术决策记录
 docs/coach_review_simulated.md   # AI 模拟教练评审（待真人终审）
 docs/lit_angle_values.md         # 文献角度数值汇集
-GLOSSARY.md             # 领域词汇表
+docs/GLOSSARY.md        # 领域词汇表
 ```
 
 ## 素材工具链（scripts/）
