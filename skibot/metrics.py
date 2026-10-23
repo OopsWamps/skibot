@@ -4,7 +4,7 @@
 角度约定见 reference_values.toml 头部注释，关键点为 Halpe-26（skibot.skeleton）。
 
 注册表：
-  METRICS         六项规范指标，带二维/三维基准标识（三维实现见 issue 04）。
+  METRICS         六项规范指标，带二维/三维基准标识（三维实现在 skibot.metrics3d）。
   LEGACY_METRICS  只存在于二维过渡期的遗留键：shoulder_hip_align。
   TWO_D_METRICS   二维管线实际产出的五个键（compute_series / report / render 用）。
   ALL_METRICS     六项规范指标（三维管线用）。

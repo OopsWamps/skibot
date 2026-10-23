@@ -59,6 +59,9 @@ def test_contract_validation():
     _expect_value_error(lambda: Skeleton3D(joints, np.full((1, 26), np.nan)))
     _expect_value_error(lambda: Skeleton3D(
         joints, conf, gravity_up=np.array([0.0, 2.0, 0.0])))
+    _expect_value_error(lambda: Skeleton3D(
+        np.zeros((2, 26, 3)), np.ones((2, 26)),
+        gravity_up=np.zeros((3, 3))))
     print("  契约校验：形状 / 置信度 / 重力向量 ✓")
 
 
@@ -87,6 +90,20 @@ def test_mock_lifter():
     print("  假模型：形状 / 翻转 / 居中 / 缺测 ✓")
 
 
+def test_per_frame_gravity_and_small_scale():
+    gravity = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+    sk = Skeleton3D(np.zeros((2, 26, 3)), np.ones((2, 26)), gravity_up=gravity)
+    assert sk.gravity_up.shape == (2, 3)
+    assert np.allclose(sk.gravity_up[1], [0.0, 0.0, 1.0])
+
+    # 坐标缩小到 1e-12：全零判定不设绝对阈值，帧仍然有效
+    kp = side_frames(1)
+    kp[:, :, :2] *= 1e-12
+    sk_small = MockLifter().lift(kp)
+    assert sk_small.valid_mask.all()
+    print("  逐帧重力 / 极小尺度：契约与 valid_mask ✓")
+
+
 def test_missing_and_zero_frames():
     kp = side_frames(3)
     kp[1] = 0.0                 # 全零帧
@@ -110,8 +127,11 @@ def test_assess_integration():
     assert res2d.skeleton3d is None
     assert res3d.skeleton3d is not None
     assert res3d.skeleton3d.n_frames == kp.shape[0]
-    # 二维报告与序列逐位不变
-    assert res3d.report["metrics"] == res2d.report["metrics"]
+    # 二维条目与序列逐位不变；三维条目追加在同一 metrics[] 里
+    metrics2d = [m for m in res3d.report["metrics"] if m["basis"] == "2d"]
+    metrics3d = [m for m in res3d.report["metrics"] if m["basis"] == "3d"]
+    assert metrics2d == res2d.report["metrics"]
+    assert len(metrics3d) == 6
     assert res3d.report["schema"] == res2d.report["schema"]
     for key in res2d.series:
         assert np.array_equal(res2d.series[key], res3d.series[key],
@@ -132,6 +152,7 @@ def test_assess_integration():
 if __name__ == "__main__":
     test_contract_validation()
     test_mock_lifter()
+    test_per_frame_gravity_and_small_scale()
     test_missing_and_zero_frames()
     test_assess_integration()
     print("全部通过")

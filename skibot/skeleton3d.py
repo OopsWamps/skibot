@@ -8,8 +8,9 @@
 - 坐标：+x 解剖右、+y 重力反方向（上）、+z 解剖前，右手系。长度单位任意，
   角度指标尺度不变；角度输出为度。
 - confidence (T, 26)：[0, 1]。0 = 缺失；>= CONF_MIN_3D 才可用于指标。
-- gravity_up (3,)：单位向量，契约默认 (0, 1, 0)。适配器若只能输出相机坐标，
-  必须给出逐帧重力向量；指标用这个向量，不把 +y 写死。
+- gravity_up (3,) 或 (T,3)：单位向量，契约默认 (0, 1, 0)。适配器若只能
+  输出相机坐标，必须给出逐帧重力向量；指标逐帧取这个向量，不把 +y 写死。
+  构造后统一存成 (T,3)。
 - 缺帧：关节不可得时坐标 NaN、confidence 0；整帧不可得时该帧全部如此。
   全零帧按缺帧处理（valid_mask 为 False），不当作"所有关节缩到原点"。
 - source：数据来源标签（"mock"/"motionbert"/...），进报告的数据来源说明。
@@ -56,11 +57,25 @@ class Skeleton3D:
         if self.confidence.shape != self.joints.shape[:2]:
             raise ValueError(
                 f"confidence 形状必须是 {self.joints.shape[:2]}，收到 {self.confidence.shape}")
-        if self.gravity_up.shape != (3,) or not np.isfinite(self.gravity_up).all():
-            raise ValueError(f"gravity_up 必须是有限三维向量，收到 {self.gravity_up}")
-        norm = float(np.linalg.norm(self.gravity_up))
-        if abs(norm - 1.0) > 1e-6:
-            raise ValueError(f"gravity_up 必须是单位向量，范数 {norm:.6f}")
+        if self.gravity_up.ndim == 1:
+            if self.gravity_up.shape != (3,):
+                raise ValueError(
+                    f"gravity_up 必须是 (3,) 或 (T,3)，收到 {self.gravity_up.shape}")
+            self.gravity_up = np.broadcast_to(
+                self.gravity_up, (self.joints.shape[0], 3)).copy()
+        elif self.gravity_up.ndim == 2:
+            if self.gravity_up.shape != (self.joints.shape[0], 3):
+                raise ValueError(
+                    f"gravity_up 形状必须是 {(self.joints.shape[0], 3)}，"
+                    f"收到 {self.gravity_up.shape}")
+        else:
+            raise ValueError(
+                f"gravity_up 必须是 (3,) 或 (T,3)，收到 {self.gravity_up.shape}")
+        if not np.isfinite(self.gravity_up).all():
+            raise ValueError(f"gravity_up 不能含 NaN/Inf，收到 {self.gravity_up}")
+        norms = np.linalg.norm(self.gravity_up, axis=1)
+        if np.any(np.abs(norms - 1.0) > 1e-6):
+            raise ValueError(f"gravity_up 每帧必须是单位向量，范数 {norms}")
         if not np.isfinite(self.confidence).all():
             raise ValueError("confidence 不能含 NaN/Inf；缺失记 0")
         if self.confidence.size and (
@@ -92,7 +107,9 @@ class Skeleton3D:
         且不是全零帧。全零帧通常是适配器对缺失帧的填充，不是真实姿态。
         """
         finite = np.isfinite(self.joints).all(axis=2)
-        nonzero = np.abs(np.nan_to_num(self.joints)).sum(axis=2) > 1e-9
+        # 只判“是否被适配器用全零填充”，不设绝对阈值：坐标单位任意缩放时
+        # 全零帧仍是全零，真实骨架不会因为单位小而被判无效。
+        nonzero = np.abs(np.nan_to_num(self.joints)).sum(axis=2) > 0.0
         good = finite & nonzero & (self.confidence >= CONF_MIN_3D)
         return good[:, CORE_JOINTS].sum(axis=1) >= MIN_CORE_JOINTS
 
@@ -129,5 +146,8 @@ class MockLifter:
         joints[:, :, 1] = -kp[:, :26, 1]   # 图像 y 向下 → 契约 y 向上
         joints[:, :, 2] = 0.0              # 假模型是平面骨架
         joints[~present] = np.nan
+        # 平面骨架、图像竖直当重力：重力来源就必须如实标成 image_vertical，
+        # 不能冒充 adapter 的规范化输出。
         return Skeleton3D(joints=joints, confidence=conf, source=self.name,
-                          meta={"adapter": type(self).__name__})
+                          meta={"adapter": type(self).__name__,
+                                "gravity_source": "image_vertical"})

@@ -6,6 +6,7 @@
   <p class="muted">
     水平档 {{ report.level }} · 视角判定 {{ report.view.detected }}
     （score {{ report.view.score }}，{{ report.view.n_valid_frames }} 有效帧）
+    {% if report.data_source %} · 三维来源 {{ report.data_source }}{% endif %}
     · 生成于 {{ report.generated_at }}
     {% if report.person %} · 选中 {{ report.person.selection }}{% endif %}
   </p>
@@ -18,7 +19,7 @@
 {% for m in metrics %}
 <div class="card">
   <h2>{{ m.name }}（{{ m.metric }}）
-    <span style="float:right;font-weight:normal;font-size:14px" class="muted">{{ m.verdict }}</span>
+    {% if m.verdict %}<span style="float:right;font-weight:normal;font-size:14px" class="muted">{{ m.verdict }}</span>{% endif %}
   </h2>
   {% if m.basis %}
   <p class="muted" style="font-size:13px;margin:0">
@@ -31,11 +32,16 @@
   <p style="font-size:26px;margin:6px 0">
     {{ m.median_deg }}°
     <span class="muted" style="font-size:14px">
-      参考带 {{ m.reference[0] }}~{{ m.reference[1] }}°
-      · 达标帧 {{ (m.pct_in_range * 100) | round(0) | int }}%
+      {% if m.reference %}参考带 {{ m.reference[0] }}~{{ m.reference[1] }}°
+      · 达标帧 {{ (m.pct_in_range * 100) | round(0) | int }}%{% else %}三维列只作描述统计{% endif %}
       · 有效 {{ m.n_valid_frames }} 帧
     </span>
   </p>
+  {% if m.helper %}
+  <p class="muted" style="font-size:13px;margin:0">
+    辅助量：{% for key, value in m.helper.items() %}{{ key }} {{ value }}°{% if not loop.last %} · {% endif %}{% endfor %}
+  </p>
+  {% endif %}
   {% if m.band_percentile is not none %}
   <div style="position:relative;height:10px;background:var(--line);border-radius:5px;margin:10px 0 4px">
     <div style="position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:5px;

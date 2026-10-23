@@ -1,11 +1,11 @@
-"""评估流程：关键点 → 视角分类 → 二维五指标 → 可选三维骨架 → 参考区间。
+"""评估流程：关键点 → 视角分类 → 二维五指标 → 可选三维骨架与六项指标 → 参考区间。
 
 主路径（cli 选完人后）与抢救路径（scripts/report_from_trc.py）共用同一条
 流程 —— 一期 #10 的量角对账走抢救路径，行为必须与主路径一致。
 Assessment 是唯一出口：报告、角度序列、帧级视角归属一次算齐整体交付，
 render 等下游收现成结果，不再重算。传入 lifter 时同一出口多带一份
-Skeleton3D；二维输出不因三维而改变（issue 03）。二期弯相位划分与三维
-指标（issue 04/10/12）在此插入。
+Skeleton3D 与三维序列；二维输出不因三维而改变（issue 03/04）。二期弯相位
+划分与相位参考带（issue 10/12）在此插入。
 """
 
 from __future__ import annotations
@@ -15,7 +15,9 @@ from dataclasses import dataclass
 import numpy as np
 
 from . import metrics as M
-from .skeleton import CORE_JOINTS, size_score
+from . import metrics3d as M3
+from . import phases as P
+from .skeleton import CONF_MIN, CORE_JOINTS, L_HIP, R_HIP, size_score
 from .skeleton3d import Lifter, Skeleton3D
 from .report import build_report
 from .view import classify_view, classify_view_frames
@@ -25,16 +27,18 @@ LOW_CONF_CORE_RATIO = 0.75  # 核心八点有效占比低于此值的帧记为�
 
 @dataclass
 class Assessment:
-    """评估结果：报告 dict、二维序列、帧级视角归属、可选三维骨架。
+    """评估结果：报告 dict、二维序列、帧级视角归属、可选三维骨架与序列。
 
     下游（render、对账脚本）消费这个整体，不要自己再算 series/frame_view
-    —— 报告与叠加层必须出自同一次计算。skeleton3d 只在传入 lifter 时存在；
-    它不改变二维报告与序列。
+    —— 报告与叠加层必须出自同一次计算。skeleton3d / series3d 只在传入
+    lifter 时存在；phases 还要再给 fps。它们不改变二维报告与序列。
     """
     report: dict
     series: dict[str, np.ndarray]
     frame_view: np.ndarray
     skeleton3d: Skeleton3D | None = None
+    series3d: dict[str, np.ndarray] | None = None
+    phases: P.PhaseSegmentation | None = None
 
 
 def compute_quality(keypoints: np.ndarray, frame_height: float | None = None) -> dict:
@@ -56,12 +60,19 @@ def assess(keypoints: np.ndarray, *, level: str,
            refs: dict, label: str,
            person: dict | None = None, calibrated: bool = False,
            quality: dict | None = None, frame_height: float | None = None,
-           lifter: Lifter | None = None) -> Assessment:
+           lifter: Lifter | None = None,
+           slope_sag_deg: float | None = None,
+           fps: float | None = None) -> Assessment:
     """keypoints: (frames, n_kp, >=3)，skeleton 契约。返回评估结果（不落盘）。
 
     quality：调用方追加的质量统计项（同名键优先于内部统计）。
-    lifter：可选的二维→三维适配器。传入时 Assessment 多带 Skeleton3D；
-    二维报告、序列与视角归属逐位不变。
+    lifter：可选的二维→三维适配器。传入时 Assessment 多带 Skeleton3D 与
+    三维序列；三维指标对所有有效帧计算，不受视角门控影响。二维报告、序列
+    与视角归属逐位不变。
+    slope_sag_deg：现场 IMU 坡度在受试者矢状面的带符号分量；只影响三维
+    躯干前倾的坡面版本，None 时该项为空。
+    fps：帧率；只有同时有 lifter 时用它切相位。None 时不做相位切分，
+    Assessment.phases 为 None（抢救路径没有视频帧率时走这条）。
     """
     frame_view = classify_view_frames(keypoints)
     vr = classify_view(keypoints, frame_view=frame_view)
@@ -69,10 +80,39 @@ def assess(keypoints: np.ndarray, *, level: str,
     sk3 = lifter.lift(keypoints) if lifter is not None else None
     if sk3 is not None and sk3.n_frames != keypoints.shape[0]:
         raise ValueError(f"三维骨架帧数 {sk3.n_frames} != 二维关键点帧数 {keypoints.shape[0]}")
+    series3d = None
+    gravity_source = "unknown"
+    slope_source = "none"
+    if sk3 is not None:
+        gravity_source = str(sk3.meta.get("gravity_source", "unknown"))
+        series3d = M3.compute_series3d(
+            sk3, slope_sag_deg=slope_sag_deg, gravity_source=gravity_source)
+        slope_source = "imu" if slope_sag_deg is not None else "none"
+    phase_seg = None
+    if series3d is not None and fps is not None:
+        # 横向轨迹用画面髋中点 x；主信号与膝弯周期都来自三维序列。
+        left = keypoints[:, L_HIP]
+        right = keypoints[:, R_HIP]
+        ok = (left[:, 2] >= CONF_MIN) & (right[:, 2] >= CONF_MIN)
+        lateral = np.where(ok, (left[:, 0] + right[:, 0]) / 2.0, np.nan)
+        phase_seg = P.segment_phases(
+            series3d["trunk_lean_frontal"], fps=fps,
+            knee=series3d["knee_flexion"], lateral=lateral)
     q = dict(quality) if quality else {}
     for k, v in compute_quality(keypoints, frame_height).items():
         q.setdefault(k, v)
+    if sk3 is not None and frame_view.size:
+        # 三维列取消视角门控后，视角分类只作为质量统计保留；二维列不加
+        # 这个字段，保持旧报告逐位不变。
+        q.setdefault("view_frame_ratio", {
+            "sagittal": round(float(np.mean(frame_view == "l")), 3),
+            "frontal": round(float(np.mean(frame_view == "f")), 3),
+            "none": round(float(np.mean(frame_view == "")), 3),
+        })
     report = build_report(label, vr, series, refs, level,
-                          person=person, calibrated=calibrated, quality=q)
+                          person=person, calibrated=calibrated, quality=q,
+                          series3d=series3d, gravity_source=gravity_source,
+                          slope_source=slope_source,
+                          data_source=sk3.source if sk3 is not None else None)
     return Assessment(report=report, series=series, frame_view=frame_view,
-                      skeleton3d=sk3)
+                      skeleton3d=sk3, series3d=series3d, phases=phase_seg)

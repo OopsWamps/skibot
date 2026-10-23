@@ -88,9 +88,10 @@ def analyze_one(video: Path, opts: AnalyzeOptions) -> Path:
     print(f"[skibot] 关键点：{tracks[chosen].name}，{kp.shape[0]} 帧")
 
     refs = load_refs(opts.refs)
-    _, frame_h, _ = probe_video(src)
+    _, frame_h, fps = probe_video(src)
     res = assess(kp, level=opts.level, refs=refs, label=str(video),
-                 person={"id": chosen, "selection": reason}, frame_height=frame_h)
+                 person={"id": chosen, "selection": reason}, frame_height=frame_h,
+                 fps=fps)
     report = res.report
     print(f"[skibot] 视角判定：{report['view']['detected']}"
           f"（score={report['view']['score']:.2f}，{report['view']['n_valid_frames']} 有效帧）")

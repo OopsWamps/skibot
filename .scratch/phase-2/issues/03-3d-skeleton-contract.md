@@ -22,7 +22,7 @@ Blocked by: 01 — 冻结三维指标定义与改写决策记录
 
 实现落在 `skibot/skeleton3d.py`：
 
-- `Skeleton3D`：`joints (T,26,3)`、`confidence (T,26)`、`gravity_up (3,)`、
+- `Skeleton3D`：`joints (T,26,3)`、`confidence (T,26)`、`gravity_up (3,) 或 (T,3)`、
   `source`、`meta`。构造时校验形状、置信度范围、重力单位向量，并对髋点齐全
   的帧强制减去髋中点。`root_defined` 标出原点可定义的帧；`valid_mask` 要求
   至少 4 个核心关节坐标有限、置信度 ≥ `CONF_MIN_3D`（暂定 0.3），且不是
@@ -47,3 +47,7 @@ Blocked by: 01 — 冻结三维指标定义与改写决策记录
 
 2026-10-23：按 ADR-0001 §3 落地。`CONF_MIN_3D=0.3` 与 `MIN_CORE_JOINTS=4`
 是暂定值，issue 04 用合成与真实素材定稿。
+
+2026-10-23：issue 04 把 `gravity_up` 扩展为 `(3,)` 或 `(T,3)`（相机坐标
+适配器需要逐帧重力），构造后统一存成 `(T,3)`；以 `skibot/skeleton3d.py`
+模块 docstring 为准。
