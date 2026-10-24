@@ -40,7 +40,7 @@ def make_skeleton(pose: dict[int, tuple[float, float, float]], *,
     return Skeleton3D(joints, confidence,
                       gravity_up=np.array(gravity, dtype=float),
                       source=source,
-                      meta={"gravity_source": source})
+                      gravity_source=source)
 
 
 def series(pose: dict[int, tuple[float, float, float]], *,
@@ -251,7 +251,7 @@ def test_per_frame_gravity():
     gravity = np.array([[0.0, 1.0, 0.0],
                         [0.0, np.cos(np.radians(10)), np.sin(np.radians(10))]])
     sk = Skeleton3D(joints, confidence, gravity_up=gravity,
-                    meta={"gravity_source": "adapter"})
+                    gravity_source="adapter")
     assert sk.gravity_up.shape == (2, 3)
     out = compute_series3d(sk)
     assert abs(out["trunk_lean_sagittal"][0]) < 1e-6
@@ -354,13 +354,13 @@ def test_missing_and_degenerate():
     assert not np.isnan(s3["hip_flexion"])
 
     zero = Skeleton3D(np.zeros((2, 26, 3)), np.full((2, 26), 0.9),
-                      meta={"gravity_source": "adapter"})
+                      gravity_source="adapter")
     out = compute_series3d(zero)
     for key in THREE_D_SERIES:
         assert np.isnan(out[key]).all(), key
 
     missing = Skeleton3D(np.full((1, 26, 3), np.nan), np.zeros((1, 26)),
-                         meta={"gravity_source": "adapter"})
+                         gravity_source="adapter")
     out = compute_series3d(missing)
     for key in THREE_D_SERIES:
         assert np.isnan(out[key]).all(), key

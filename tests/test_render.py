@@ -83,7 +83,7 @@ def test_probe_and_render():
     assert res.report["view"]["detected"] == "sagittal"
 
     out = tmp / "anno.mp4"
-    render_annotated(video, kp, res, refs, "novice", out)
+    render_annotated(video, kp, res, out)
     assert out.exists() and out.stat().st_size > 0
     print("  probe_video / render_annotated 产物 ✓")
 
@@ -100,11 +100,11 @@ def test_render_mixed():
     assert res.report["view"]["detected"] == "mixed"
 
     out_default = tmp / "anno_default.mp4"
-    render_annotated(video, kp, res, refs, "novice", out_default)
+    render_annotated(video, kp, res, out_default)
     assert out_default.exists() and out_default.stat().st_size > 0
 
     out_explicit = tmp / "anno_explicit.mp4"
-    render_annotated(video, kp, res, refs, "novice", out_explicit, view="mixed")
+    render_annotated(video, kp, res, out_explicit, view="mixed")
     assert out_explicit.exists() and out_explicit.stat().st_size > 0
     print("  render mixed 叠加（默认判定 + 显式指定）产物 ✓")
 

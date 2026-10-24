@@ -15,9 +15,11 @@ from pathlib import Path
 
 import numpy as np
 
-from .metrics import LEGACY_METRICS, METRICS, TWO_D_METRICS, metric_label, metric_plane
-from .metrics3d import GRAVITY_SOURCES
+from . import artifacts
+from .metrics import LEGACY_METRICS, METRICS, active_for_view, metric_label
+from .metrics3d import KNEE_ABDUCTION_SERIES, TRUNK_LEAN_SERIES
 from .reference import LEVELS, MetricRef, lookup, pct_in_range
+from .skeleton3d import GRAVITY_SOURCES
 
 UNCALIBRATED_NOTICE = "参考区间为未校准的占位初值，本报告仅供自查，不构成教学结论。"
 
@@ -122,15 +124,17 @@ def _build_metrics3d(series: dict[str, np.ndarray], *,
                 },
             })
         elif name == "trunk_lean":
-            s = series["trunk_lean_sagittal"]
+            # 分量键由 metrics3d 的分组元组一次性解包：键名或拆并方式变了，
+            # 这里立刻报错，而不是各处裸写字面量键悄悄漂移
+            sag, frt, tot, slo = (series[k] for k in TRUNK_LEAN_SERIES)
             item.update({
-                "median_deg": _median_or_none(s),
-                "n_valid_frames": _n_valid(s),
+                "median_deg": _median_or_none(sag),
+                "n_valid_frames": _n_valid(sag),
                 "zero_deg": 0.0,
-                "sagittal_deg": _median_or_none(s),
-                "frontal_deg": _median_or_none(series["trunk_lean_frontal"]),
-                "total_deg": _median_or_none(series["trunk_lean_total"]),
-                "slope_normal_deg": _median_or_none(series["trunk_lean_slope"]),
+                "sagittal_deg": _median_or_none(sag),
+                "frontal_deg": _median_or_none(frt),
+                "total_deg": _median_or_none(tot),
+                "slope_normal_deg": _median_or_none(slo),
                 "gravity_source": gravity_source,
                 "slope_source": slope_source,
             })
@@ -141,12 +145,12 @@ def _build_metrics3d(series: dict[str, np.ndarray], *,
             else:
                 item["note"] = f"重力来源 {gravity_source}；坡面版本按现场 IMU 坡度计算"
         elif name == "knee_abduction":
-            s = series["knee_abduction_primary"]
-            left = _median_or_none(series["knee_abduction_left"])
-            right = _median_or_none(series["knee_abduction_right"])
+            primary, kleft, kright = (series[k] for k in KNEE_ABDUCTION_SERIES)
+            left = _median_or_none(kleft)
+            right = _median_or_none(kright)
             item.update({
-                "median_deg": _median_or_none(s),
-                "n_valid_frames": _n_valid(s),
+                "median_deg": _median_or_none(primary),
+                "n_valid_frames": _n_valid(primary),
                 "zero_deg": 0.0,
                 "left_deg": left,
                 "right_deg": right,
@@ -203,12 +207,12 @@ def build_report(
         quality["deep_squat_frame_ratio"] = round(squat, 3)
     notices = [] if calibrated else [UNCALIBRATED_NOTICE]
 
-    # 视角门控：整视频单一视角时按注册表筛；mixed（跟拍混合视角）下
-    # sagittal/frontal 指标已在 metrics.compute_series 逐帧门控，两侧都放行
+    # 视角门控：唯一规则在 metrics.active_for_view——整视频单一视角时按
+    # 注册表筛；mixed（跟拍混合视角）下 sagittal/frontal 指标已在
+    # metrics.compute_series 逐帧门控，两侧都放行。render 叠加层走同一条
+    # 规则，两边不可能漂移。
     view = view_result.view
-    for name in TWO_D_METRICS:
-        if view not in (metric_plane(name), "mixed"):
-            continue
+    for name in active_for_view(view):
         s = series[name]
         ref = lookup(refs, name, level)
         p = pct_in_range(s, ref)
@@ -291,6 +295,9 @@ def build_report(
     if view == "mixed":
         notices.append("跟拍混合视角：侧面指标取自侧面帧、正面指标取自正面帧"
                        "（各自有效帧数见 n_valid_frames），相机转向造成的投影误差无法完全排除")
+    if view == "ambiguous":
+        notices.append("视角判定不明确，二维指标未输出；已知拍摄视角时"
+                       "可显式指定视角重跑")
     low_conf = quality.get("low_conf_frame_ratio")
     if low_conf is not None and low_conf >= LOW_CONF_FRAME_RATIO_WARN:
         notices.append(f"低置信度帧占 {low_conf*100:.0f}%，骨架质量受限，数值仅供参考")
@@ -304,9 +311,9 @@ def build_report(
 
 
 def save_json(report: dict, path: str | Path) -> Path:
+    """报告原子落盘：并发刷新报告页的请求不会读到半截 JSON。"""
     path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    artifacts.write_text_atomic(path, json.dumps(report, ensure_ascii=False, indent=2))
     return path
 
 

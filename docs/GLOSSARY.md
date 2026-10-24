@@ -20,17 +20,22 @@
 - **相位（phase）**：一个弯切成的入弯/控制/出弯。主信号是 `trunk_lean_frontal`，换刃 = 过零，三相位以本弯最大侧倾的 50% 为界；半周期幅值（换刃零点到本弯最大侧倾）<6°、时长 <0.5s、置信度 <0.5 的弯被丢弃。实现见 `skibot/phases.py`，`Assessment.phases` 在传入 lifter 且给了 fps 时存在（issue 10）。
 - **相位聚合（phase aggregate）**：只覆盖屈髋、膝弯、躯干前倾矢状分量，且只用合格弯的帧；低置信弯的帧不进聚合。无合格弯时回退全程值并注明（issue 10）。
 - **三维参考带（band3d）**：指标 × 档位 × 相位；advanced 由验证过的三维管线跑 EPFL 生成，带宽不得窄于验收 p90 误差（ADR-0002）。
-- **重力来源（gravity_source）**：calibrated / adapter / image_vertical。报告必须标注；不可信时躯干前倾不出数（ADR-0001 §5.1）。
+- **重力来源（gravity_source）**：calibrated / adapter / image_vertical，是 Skeleton3D 的契约字段（构造时校验，默认 unknown = 不可信）。报告必须标注；不可信时躯干前倾不出数（ADR-0001 §5.1）。
 - **参考区间（reference）**：新手/中级/高级三档角度区间，存 reference_values.toml；未校准前报告强制带水印（一期 #8）。
 - **评估流程（assess）**：关键点 → 视角分类 → 五指标 → 参考区间 → 评估结果。主路径与抢救路径共用同一条流程。二期在关键点之后插入三维提升与相位切分，仍是一次评估出齐报告、相位数据与动画数据（spec「Testing Decisions」）。
 - **评估结果（Assessment）**：assess 的唯一出口，报告 dict + 角度序列 + 帧级视角归属三件套；报告与标注视频叠加层必须出自同一次评估。
 - **质量提示（quality）**：人物偏小、低置信度帧、深蹲相位等报告水印。统计在 assess（核心八点口径见 skeleton.CORE_JOINTS），判读阈值与文案在 report（验证进展 #3）。
 - **主轨迹选择（select_person）**：从多人物轨迹里锁定分析对象。尺寸+位移自动打分；--color 按裤腿颜色锁定；--person 人工直指定（一期 #6）。
 - **姿态后端（backend）**：Sports2D 管线（YOLOX 检测 + RTMPose top-down，RTMLib 推理）。skibot 经子进程调用，产物是 px trc（一期 #5）。
-- **抢救路径（salvage）**：Sports2D 收尾挂死/超时后，从已落盘的 px trc 直接出报告（scripts/report_from_trc.py）。验证阶段的量角对账也走这条路（一期 #10）。
+- **抢救路径（salvage）**：Sports2D 收尾挂死/超时后，从已落盘的 px trc 直接出报告（scripts/report_from_trc.py），与主路径同走评估收尾、只落报告。trc 的读写共用同一份编码知识（UTF-8 优先、GBK 回退），GBK 头的素材既能解析也能当缝合模板。验证阶段的量角对账也走这条路（一期 #10）。
 - **EPFL 对账（reconcile）**：与 EPFL Ski2DPose 人工标注的量化对账工具链（图像级/视频级误差、尾部归因、参考值提案，验证进展 #1-5）。数据集 adapter 在 skibot/epfl.py。
 - **多机位标定（calibration）**：离线标定板（棋盘格或 ChArUco）求相机内参、畸变与世界→相机位姿；内参图集（板移动到多个不同位姿）与外参图集（每台相机同一静止板位姿各一张）分开，且两套图同分辨率。棋盘格内角点数之和必须为奇数（7x6/6x7），对称板会因 180° 角点反序被拒绝。板第一个内角点为世界原点，+x/+y 按 OpenCV 棋盘格角点顺序、+z 垂直板面，单位由 square_size 决定。实现 `skibot/multiview.py`（issue 06）。
 - **三角化真值（triangulation）**：多视角 DLT 还原三维点，输出 (T,J,3) 点、有效掩码、重投影误差与视角数；`TriangulationResult.save/load` 读写 `.npz`，供验收脚本消费（issue 06）。
 - **拍手同步（clap sync）**：每段开录 3 秒内拍两次手，按包络检测拍手时刻；每路必须恰好两次，同一相机两次拍手的偏移差 ≤ 半帧才可靠，否则整段标不可靠并给原因。两路等间隔、一路漏第一次而补检后续事件时索引配对有固有歧义，需要外部先验（issue 06）。
+- **任务表（task board）**：Web 壳的任务队列，单工作线程串行执行分析与改选（改选优先于排队分析：只重跑评估与渲染，且用户正等结果）。元数据（原文件名、水平档、打码开关、状态、改选子状态）原子落盘结果目录下的 `tasks.json`（`serve` 默认 `web_results/tasks.json`）：重启后排队任务继续执行；运行中被中断的标为失败、任务页可重试，但若报告已写完（上次落盘失败留下的 RUNNING）则恢复为完成；改选跑到一半重启的复位改选状态并标中断原因；已完成任务照旧可查看，「完成且可查看」的唯一判据是 Task.done（状态 done 且报告在表）。陈旧轨迹的防线上移到管线层：analyze_one 只认本次运行产出（新建或更新）的 px trc，Sports2D 失败时旧轨迹原地保留——既不会被当成本次结果，也不会被销毁（旧轨迹还是旧报告改选与预览的数据源）；CLI 重跑与 web 重试受同一道防线保护，worker 不再清目录。blur 未知的任务拒绝执行（以未知状态分析会不打码跑、还会删掉已有打码副本）。源视频丢失时拒绝重试并提示重新上传。读文件失败（被锁）时保留原文件、下次落盘前先备份成 `tasks.json.unreadable` 再重建；JSON 解析失败或形状非法才回退扫描 report.json。从报告重建的旧任务按 report 的 video → `uploads/<id>/` 顺序找回源视频，打码开关注记为未知（改选时按打码副本推断）。启动时回收孤儿上传目录（落盘后未入队的 `uploads/<id>` 残骸）。分析函数可构造注入（`TaskBoard`/`create_app` 的 analyze_fn），测试不跑 Sports2D。实现 `skibot/web/tasks.py`（issue 17）。
+- **上传预检（precheck）**：入队前的廉价信号硬门——容器/编码、分辨率、时长与帧数、抽帧人物占比。不合格返回 422、页面给出原因与重拍建议，素材不落分析队列。帧数上限与帧率无关（帧数可读就判）；抽帧只铺在视频 10%~90% 处，帧数未知（VFR/索引缺失）时不做人物占比硬门、只确认能解码；人物检测用内置 HOG，窗口下限 128px 所以阈值定在 0.18——检不出、帧率/帧数读不出、检测器异常都按“无法判定”放行（宁放勿杀）；只有元数据可读却一帧都解不出才按不可解码拒绝。判据可配置（`PrecheckConfig`），实现在 `skibot/precheck.py`（issue 13）。
+- **改选人物（reselect）**：报告页从已落盘的全部人物轨迹换分析对象，只重跑评估与渲染，不重跑姿态检测；经任务表入队、worker 串行执行，进度（reselecting/reselect_error）作为任务子状态随表持久化。视频源由任务表里的打码开关决定（blur=True 必须用打码副本，副本丢失报错；False 用上传原件），发布走评估收尾的成对原子替换，渲染失败不会出现报告与视频错配。候选带编号骨架预览（reselect.ensure_previews 按需生成，每候选取自身最近的有效帧——人物只出现半段也能对应上）；单人素材不显示选择器；当前选中人物由 reselect.current_person 提供，web 层不解报告 JSON。实现 `skibot/reselect.py`（issue 16）。
+- **产物目录（artifacts）**：结果子目录 `result_dir/<视频 stem>`（web 流里 stem == task_id）的命名与布局唯一事实源——report.json、`<stem>_annotated.mp4`、`<stem>_blurred.mp4`、`candidate_person<pid>.jpg` 与 `/files` 静态地址都从它取。打码副本的三态源解析（见「改选人物」）与 Windows 文件锁重试（原子写、原子替换、容错读）也在这里。实现在 `skibot/artifacts.py`。
+- **评估收尾（finalize）**：assess → 原子落盘报告 → 渲染标注视频的唯一串链。报告与标注视频先写临时文件、渲染成功后按「视频 → 报告」顺序原子替换，任何一步失败都保持旧产物（先备份旧视频，报告替换失败则回滚视频），发布后的报告与叠加层出自同一次评估。抢救路径只落报告。主路径（cli.analyze_one）、改选与抢救脚本都走 `finalize.assess_and_publish`，各自不再串链。
 - **标注视频（render）**：自绘骨架+角度值叠加，只画选中者，替代 Sports2D 的全人物标注视频；数值按参考区间绿/红着色（一期 #9）。
-- **打码（privacy）**：人脸高斯模糊，默认开（一期 #11）。
+- **打码（privacy）**：人脸高斯模糊，默认开（一期 #11）。未打码的上传原件不对 `/files` 静态挂载开放（`/files/uploads/*` 一律 404），静态挂载只服务各结果子目录。

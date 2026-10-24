@@ -28,7 +28,7 @@ import numpy as np
 
 from .skeleton import (
     CONF_MIN, L_ANKLE, L_HIP, L_KNEE, L_SHOULDER,
-    R_ANKLE, R_HIP, R_KNEE, R_SHOULDER, SIDE_JOINTS,
+    R_ANKLE, R_HIP, R_KNEE, R_SHOULDER, SIDE_JOINTS, pick_side,
 )
 
 
@@ -144,6 +144,18 @@ def metrics_for_basis(basis: str) -> tuple[str, ...]:
     return tuple(m for m, d in METRICS.items() if basis in d.bases)
 
 
+def active_for_view(view: str) -> list[str]:
+    """某视角判定下放行的二维指标——report 与 render 共用的唯一门控规则。
+
+    mixed 放行全部：逐帧门控（compute_series 的 frame_view）已保证每个值
+    出自其可信平面；单一视角按注册表平面筛；ambiguous 全不放行。此前这条
+    规则在 report 与 render 各写一遍，报告与叠加层的指标集可能漂移。
+    """
+    if view == "mixed":
+        return list(TWO_D_METRICS)
+    return [m for m in TWO_D_METRICS if metric_plane(m) == view]
+
+
 SAGITTAL_METRICS = tuple(m for m in TWO_D_METRICS if metric_plane(m) == "sagittal")
 FRONTAL_METRICS = tuple(m for m in TWO_D_METRICS if metric_plane(m) == "frontal")
 
@@ -174,7 +186,7 @@ def select_side(kp: np.ndarray) -> str:
     """选置信度高的一侧肢体（侧面视频里近侧肢体更可信）。"""
     left = np.mean([kp[i, 2] for i in SIDE_JOINTS["left"]])
     right = np.mean([kp[i, 2] for i in SIDE_JOINTS["right"]])
-    return "left" if left >= right else "right"
+    return pick_side(float(left), float(right))
 
 
 def compute_series(keypoints: np.ndarray, frame_view: np.ndarray | None = None) -> dict[str, np.ndarray]:

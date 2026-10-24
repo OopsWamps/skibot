@@ -28,14 +28,13 @@ import numpy as np
 
 from .skeleton import (
     L_ANKLE, L_HIP, L_KNEE, L_SHOULDER,
-    R_ANKLE, R_HIP, R_KNEE, R_SHOULDER, SIDE_JOINTS,
+    R_ANKLE, R_HIP, R_KNEE, R_SHOULDER, SIDE_JOINTS, pick_side,
 )
-from .skeleton3d import CONF_MIN_3D, Skeleton3D
+from .skeleton3d import CONF_MIN_3D, GRAVITY_SOURCES, Skeleton3D
 
 _REL_EPS = 1e-9       # 长度向量的退化阈值，相对骨架尺度
 _UNIT_EPS = 1e-9      # 单位向量之间（叉积范数）的退化阈值，无量纲
 _DOT_EPS = 1e-12      # 单位向量点积的零判定
-GRAVITY_SOURCES = ("calibrated", "adapter", "image_vertical")
 
 TRUNK_LEAN_SERIES = (
     "trunk_lean_sagittal", "trunk_lean_frontal",
@@ -73,16 +72,11 @@ def _angle_deg(u: np.ndarray, v: np.ndarray) -> float:
     return float(np.degrees(np.arccos(float(np.clip(np.dot(u, v), -1.0, 1.0)))))
 
 
-def _joint_ok(sk: Skeleton3D, f: int, idx: int) -> bool:
-    return (bool(np.isfinite(sk.joints[f, idx]).all())
-            and float(sk.confidence[f, idx]) >= CONF_MIN_3D)
-
-
 def select_side(sk: Skeleton3D, f: int) -> str:
-    """按契约置信度选一侧；平票取左，与二维 select_side 的 `>=` 一致。"""
+    """按契约置信度选一侧；平票取左，规则唯一实现在 skeleton.pick_side。"""
     left = float(np.mean(sk.confidence[f, list(SIDE_JOINTS["left"])]))
     right = float(np.mean(sk.confidence[f, list(SIDE_JOINTS["right"])]))
-    return "left" if left >= right else "right"
+    return pick_side(left, right)
 
 
 def _frame_series(sk: Skeleton3D, f: int, *, side: str,
@@ -219,11 +213,11 @@ def compute_series3d(skeleton: Skeleton3D, *,
 
     slope_sag_deg：沿滚落线的坡度投影到受试者矢状面的带符号分量
     （ADR-0001 §5.1）；None 表示没有现场 IMU 读数，`trunk_lean_slope` 为 NaN。
-    gravity_source：默认取 `skeleton.meta["gravity_source"]`；不在
+    gravity_source：默认取契约字段 `skeleton.gravity_source`；不在
     calibrated / adapter / image_vertical 里时躯干前倾全为 NaN。
     """
     if gravity_source is None:
-        gravity_source = str(skeleton.meta.get("gravity_source", "unknown"))
+        gravity_source = skeleton.gravity_source
 
     out = {key: np.full(skeleton.n_frames, np.nan) for key in THREE_D_SERIES}
     valid = skeleton.valid_mask

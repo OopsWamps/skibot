@@ -67,6 +67,59 @@
   <video controls style="width:100%;border-radius:6px" src="{{ annotated_url }}"></video>
 </div>
 
+{% if candidates | length > 1 %}
+<div class="card" id="picker">
+  <h2>分析对象</h2>
+  <p class="muted" style="margin-top:0">当前 person {{ current_person }}。选择其他人物只重跑评估与渲染，不重新检测姿态。</p>
+  <div style="display:flex;gap:12px;flex-wrap:wrap">
+    {% for c in candidates %}
+    <button class="pick" data-id="{{ c.id }}" data-current="{{ '1' if c.id == current_person else '' }}"
+            style="background:none;border:2px solid {{ 'var(--ink)' if c.id == current_person else 'var(--line)' }};
+                   border-radius:8px;padding:6px;cursor:pointer;text-align:center">
+      {% if c.preview_url %}
+      <img src="{{ c.preview_url }}" alt="person {{ c.id }}"
+           style="width:180px;border-radius:4px;display:block">
+      {% endif %}
+      <span>person {{ c.id }}<br><span class="muted" style="font-size:12px">有效 {{ c.n_valid_frames }} 帧</span></span>
+    </button>
+    {% endfor %}
+  </div>
+  <p class="muted" id="pickmsg" style="margin-bottom:0"></p>
+</div>
+<script>
+document.querySelectorAll('button.pick').forEach(b => b.onclick = () => {
+  if (b.dataset.current) return;
+  const msg = document.getElementById('pickmsg');
+  document.querySelectorAll('button.pick').forEach(x => x.disabled = true);
+  msg.textContent = '改选中：只重跑评估与渲染…';
+  const body = new FormData(); body.append('person', b.dataset.id);
+  const fail = err => {
+  document.querySelectorAll('button.pick').forEach(x => x.disabled = false);
+  msg.textContent = '改选失败：' + err.message;
+};
+const poll = async () => {
+  const j = await (await fetch('/api/tasks/{{ task.id }}')).json();
+  if (!j.reselecting) {
+    if (j.reselect_error) throw new Error(j.reselect_error);
+    location.reload();
+    return;
+  }
+  setTimeout(() => poll().catch(fail), 1000);
+};
+fetch('/api/tasks/{{ task.id }}/person', {method: 'POST', body})
+  .then(async r => {
+    if (!r.ok) {
+      let detail = r.status;
+      try { detail = (await r.json()).detail || r.status; } catch (_) {}
+      throw new Error(detail);
+    }
+    setTimeout(() => poll().catch(fail), 800);
+  })
+  .catch(fail);
+});
+</script>
+{% endif %}
+
 <div class="card">
   <h2>假设与口径</h2>
   <ul class="muted" style="margin:0;padding-left:18px">

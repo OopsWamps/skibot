@@ -84,10 +84,13 @@ def keypoints_halpe(names: list[str], xyz: np.ndarray) -> np.ndarray:
 def write_trc(kp: np.ndarray, src_trc: str | Path, out_trc: str | Path) -> Path:
     """以 src_trc 的表头与 Frame#/Time 列为模板，只替换坐标区。丢点写空单元格。
 
-    src 数据行数与 kp 帧数不符时抛 ValueError（写前校验，残缺 src 不许静默截断）。
+    模板读取与 parse 走同一条容错路径（UTF-8 优先、GBK 回退）：GBK 头的
+    px trc 能被解析，也要能当缝合模板，否则抢救路径恰好死在触发编码
+    修复的那类文件上。src 数据行数与 kp 帧数不符时抛 ValueError
+    （写前校验，残缺 src 不许静默截断）。
     """
     n_markers = kp.shape[1]
-    lines = Path(src_trc).read_text(encoding="utf-8").splitlines()
+    lines = _read_text_tolerant(src_trc).splitlines()
 
     def _is_data_row(ln: str) -> bool:
         try:

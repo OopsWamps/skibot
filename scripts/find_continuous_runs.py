@@ -15,6 +15,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from skibot import artifacts  # noqa: E402
 from skibot.trc_io import parse_trc_full  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -59,7 +60,7 @@ def continuous_runs(valid: np.ndarray, fps: float) -> list[tuple[int, int, float
 
 
 def person_from_report(d: Path) -> int | None:
-    rep = d / "report.json"
+    rep = artifacts.report_path(d)
     if not rep.exists():
         return None
     import json

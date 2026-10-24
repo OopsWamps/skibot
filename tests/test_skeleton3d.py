@@ -62,7 +62,10 @@ def test_contract_validation():
     _expect_value_error(lambda: Skeleton3D(
         np.zeros((2, 26, 3)), np.ones((2, 26)),
         gravity_up=np.zeros((3, 3))))
-    print("  契约校验：形状 / 置信度 / 重力向量 ✓")
+    # 重力来源是契约字段：非法值构造即报错，不再静默降级成 unknown
+    _expect_value_error(lambda: Skeleton3D(joints, conf, gravity_source="made_up"))
+    assert Skeleton3D(joints, conf).gravity_source == "unknown"  # 默认不可信
+    print("  契约校验：形状 / 置信度 / 重力向量 / 重力来源 ✓")
 
 
 def test_mock_lifter():
@@ -71,6 +74,7 @@ def test_mock_lifter():
     assert sk.joints.shape == (2, 26, 3)
     assert sk.confidence.shape == (2, 26)
     assert sk.source == "mock" and sk.meta["adapter"] == "MockLifter"
+    assert sk.gravity_source == "image_vertical"  # 平面骨架必须如实标注重力来源
     assert sk.n_frames == 2
     assert sk.valid_mask.all() and sk.root_defined.all()
 

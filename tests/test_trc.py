@@ -174,6 +174,48 @@ def test_write_trc_row_count_guard():
     print("  write_trc 行数守卫 ✓")
 
 
+def _write_full_trc(directory: Path, name: str, encoding: str = "utf-8") -> Path:
+    """26 marker 全量 trc（write_trc 的真实使用形态：Sports2D 的 src trc
+    本就带全量 marker 名）。返回写入的路径。"""
+    alias = {0: "Nose", 3: "LEar", 4: "REar", 5: "LShoulder", 6: "RShoulder",
+             11: "LHip", 12: "RHip", 13: "LKnee", 14: "RKnee", 15: "LAnkle", 16: "RAnkle"}
+    names = [alias.get(i, f"J{i}") for i in range(26)]
+    xyz = (np.arange(2 * 26 * 3).reshape(2, 26, 3) % 97) * 1.5
+    xyz[1, 5] = np.nan  # 第 2 帧 LShoulder 丢点 → conf 逐帧
+    lines = ["PathFileType\t4\t(X/Y/Z)\tfake.trc",
+             "DataRate\tCameraFrameRate\tNumFrames\tNumMarkers\tUnits",
+             "30.00\t30.00\t2\t26\tm",
+             "Frame\tTime\t" + "\t".join(names), ""]
+    for f in range(2):
+        cells = [str(f + 1), f"{f / 30:.6f}"]
+        for j in range(26):
+            for c in range(3):
+                v = xyz[f, j, c]
+                cells.append("" if np.isnan(v) else f"{v:.6f}")
+        lines.append("\t".join(cells))
+    p = directory / name
+    p.write_text("\n".join(lines) + "\n", encoding=encoding)
+    return p
+
+
+def test_write_trc_tolerates_gbk_template():
+    """GBK 头的 src trc（5748d6d 修的那类）能被解析，也要能当 write_trc 的模板。
+
+    之前 write_trc 严格按 UTF-8 读模板，缝合抢救路径恰好死在触发编码
+    修复的那类文件上；读写两条路径必须共用同一份编码知识。
+    """
+    tmp = Path(tempfile.mkdtemp(prefix="skibot_test_trc_"))
+    p = _write_full_trc(tmp, "gbk_px_person00.trc", encoding="gbk")
+
+    kp = load_kp(p)  # 宽容读：GBK 头能解析
+    out = tmp / "stitched.trc"
+    write_trc_file(kp, p, out)  # 模板读走同一条容错路径，不再崩
+    kp2 = load_kp(out)
+    assert (kp2[:, :, 2] == kp[:, :, 2]).all()
+    assert np.allclose(kp2[:, :, :2], kp[:, :, :2], equal_nan=True)
+    print("  write_trc GBK 模板 ✓")
+
+
 def test_parse_trc_full_time_column():
     p = write_trc(BASIC_TRC)
     names, t, xyz = parse_trc_full(p)
@@ -212,6 +254,7 @@ if __name__ == "__main__":
     test_keypoints_halpe_per_frame_conf()
     test_load_kp_and_write_roundtrip()
     test_write_trc_row_count_guard()
+    test_write_trc_tolerates_gbk_template()
     test_parse_trc_full_time_column()
     test_stitch_blend_and_guard()
     print("全部通过")

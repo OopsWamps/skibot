@@ -2,8 +2,10 @@
 
 替代 Sports2D 的标注视频（实测两大问题：5 人全画、输出只剩 31/427 帧）。
 骨架画在打码后的画面上（帧号与 trc 一致）；指标数值按参考区间绿/红着色。
-序列与帧级视角出自 assess 的评估结果（Assessment）—— 报告与叠加层出自
-同一次计算，本模块不重算。
+序列、视角判定与参考区间全部出自 assess 的评估结果（Assessment）——
+报告与叠加层出自同一次计算，本模块不重算、不向调用方要第二遍数据。
+叠加哪套指标走 metrics.active_for_view 这一条规则（与报告共用）；显式
+view 覆盖判定时在画面上留痕（override 标注），不让叠加层悄悄越出报告。
 """
 
 from __future__ import annotations
@@ -16,7 +18,7 @@ import numpy as np
 
 from . import metrics as M
 from .assess import Assessment
-from .reference import MetricRef, lookup
+from .reference import lookup
 from .skeleton import (
     L_ANKLE, L_HIP, L_KNEE, L_SHOULDER,
     R_ANKLE, R_HIP, R_KNEE, R_SHOULDER,
@@ -45,11 +47,9 @@ def probe_video(video_src: str | Path) -> tuple[int, int, float]:
 def render_annotated(
     video_src: str | Path,
     kp: np.ndarray,                       # (frames,26,3) [x,y,conf]
-    assessment: Assessment,               # assess 的评估结果：序列与帧级视角
-    refs: dict[str, dict[str, MetricRef]],  # 全量参考表
-    level: str,                           # 水平档，决定区间着色
+    assessment: Assessment,               # assess 的评估结果：序列、视角、参考区间
     out_path: str | Path,
-    view: str | None = None,              # 覆盖叠加哪套指标；默认按评估判定
+    view: str | None = None,              # 覆盖叠加哪套指标；默认按评估判定（画面留痕）
 ) -> Path:
     cap = cv2.VideoCapture(str(video_src))
     if not cap.isOpened():
@@ -60,15 +60,18 @@ def render_annotated(
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     writer = cv2.VideoWriter(str(out_path), cv2.VideoWriter_fourcc(*"mp4v"), fps, (w, h))  # type: ignore[attr-defined]
+    if not writer.isOpened():
+        # 不检查的话 write 全部静默丢弃，调用方拿到一个空文件当成功
+        cap.release()
+        raise RuntimeError(f"无法创建标注视频写入器（路径不可写？）: {out_path}")
 
     series = assessment.series
-    detected = view or assessment.report["view"]["detected"]
-    if detected == "mixed":
-        # 跟拍混合视角：逐帧门控已保证每个值出自其可信平面，全部指标可画
-        active = list(M.TWO_D_METRICS)
-    else:
-        active = [m for m in M.TWO_D_METRICS if M.metric_plane(m) == detected]
-    ref_by_metric = {m: lookup(refs, m, level) for m in active}
+    detected = view or assessment.view.view
+    # 与报告共用的唯一门控规则；level 与参考区间都来自同一次评估
+    active = M.active_for_view(detected)
+    ref_by_metric = {m: lookup(assessment.refs, m, assessment.report["level"])
+                     for m in active}
+    override = view is not None and view != assessment.view.view
 
     f = 0
     while True:
@@ -77,7 +80,8 @@ def render_annotated(
             break
         if f < kp.shape[0]:
             _draw_skeleton(frame, kp[f])
-            _draw_metrics(frame, f, active, series, ref_by_metric)
+            _draw_metrics(frame, f, active, series, ref_by_metric,
+                          override_view=detected if override else None)
         writer.write(frame)
         f += 1
 
@@ -126,10 +130,16 @@ def _draw_skeleton(frame, kp_f) -> None:
             cv2.circle(frame, tuple(kp_f[j][:2].astype(int)), 5, WHITE, -1, cv2.LINE_AA)
 
 
-def _draw_metrics(frame, f, active, series, refs) -> None:
+def _draw_metrics(frame, f, active, series, refs,
+                  override_view: str | None = None) -> None:
     y = 28
     cv2.putText(frame, "skibot", (12, y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, GREEN, 2, cv2.LINE_AA)
     y += 30
+    if override_view:
+        # 覆盖判定时在画面留痕：叠加层画了报告没放行的指标集，得让人看见
+        cv2.putText(frame, f"view: {override_view} (override)", (12, y),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, WHITE, 2, cv2.LINE_AA)
+        y += 26
     for m in active:
         s = series[m]
         ref = refs[m]

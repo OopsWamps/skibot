@@ -3,7 +3,8 @@
 {% block content %}
 <div class="card">
   <h1>上传滑雪视频</h1>
-  <p class="muted">mp4/mov/m4v/avi；分析在服务器排队执行，分钟级，完成后在任务页查看报告。</p>
+  <p class="muted">mp4/mov/m4v/avi；分析在服务器排队执行，分钟级，完成后在任务页查看报告。
+  上传即预检：分辨率低于 720p、时长不足 3 秒、人物占画面过小会被当场拒绝并给出重拍建议。</p>
   <form id="f">
     <p><input type="file" name="video" accept=".mp4,.mov,.m4v,.avi" required
               style="margin-top:6px"></p>
@@ -21,18 +22,40 @@
     <p><button class="btn" id="go" type="submit">开始分析</button>
        <span id="msg" class="muted" style="margin-left:12px"></span></p>
   </form>
+  <div id="reject" class="error" style="display:none"></div>
 </div>
 <script>
+function showReject(detail) {
+  // 预检拒绝：结构化列出每条原因与重拍建议；其他错误按字符串展示
+  const box = document.getElementById('reject');
+  box.replaceChildren();
+  if (detail && typeof detail === 'object' && detail.issues) {
+    const h = document.createElement('strong');
+    h.textContent = detail.message || '视频未通过上传预检';
+    box.append(h);
+    const ul = document.createElement('ul');
+    for (const it of detail.issues) {
+      const li = document.createElement('li');
+      li.textContent = it.problem + ' —— ' + it.advice;
+      ul.append(li);
+    }
+    box.append(ul);
+  } else {
+    box.textContent = String(detail || '上传失败');
+  }
+  box.style.display = 'block';
+}
 document.getElementById('f').addEventListener('submit', async (e) => {
   e.preventDefault();
   const btn = document.getElementById('go'), msg = document.getElementById('msg');
-  btn.disabled = true; msg.textContent = '上传中…';
+  document.getElementById('reject').style.display = 'none';
+  btn.disabled = true; msg.textContent = '上传并预检中…';
   try {
     const r = await fetch('/api/upload', {method: 'POST', body: new FormData(e.target)});
-    const j = await r.json();
-    if (!r.ok) { msg.textContent = j.detail || '上传失败'; btn.disabled = false; return; }
+    const j = await r.json().catch(() => ({detail: '服务端返回了无法解析的响应'}));
+    if (!r.ok) { showReject(j.detail); msg.textContent = ''; btn.disabled = false; return; }
     location.href = '/tasks';
-  } catch (err) { msg.textContent = '上传失败：' + err; btn.disabled = false; }
+  } catch (err) { showReject('上传失败：' + err); btn.disabled = false; }
 });
 </script>
 {% endblock %}

@@ -58,6 +58,7 @@ def test_assess_side_view_report():
     assert report["person"] == {"id": 0, "selection": "测试"}
     assert report["calibrated"] is False and report["notice"]
     assert (res.frame_view == "l").all()  # 帧级归属与整视频判定一致
+    assert res.view.view == "sagittal" and res.refs is refs  # 判定与参考区间随行
     print("  assess：侧面骨架 → 侧面指标 + person 透传 ✓")
 
 

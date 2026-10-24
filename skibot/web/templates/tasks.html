@@ -16,16 +16,39 @@
       <td class="st-{{ t.status }}">
         {% if t.status == 'done' %}完成
         {% elif t.status == 'running' %}分析中…
-        {% elif t.status == 'failed' %}失败
+        {% elif t.status == 'failed' %}失败{% if t.error %}<div class="muted">{{ t.error }}</div>{% endif %}
         {% else %}排队中{% endif %}
       </td>
-      <td>{% if t.status == 'done' %}<a href="/report/{{ t.id }}">查看报告</a>{% endif %}</td>
+      <td>{% if t.status == 'done' %}<a href="/report/{{ t.id }}">查看报告</a>
+        {% elif t.status == 'failed' %}<button class="retry" data-id="{{ t.id }}">重试</button>{% endif %}</td>
     </tr>
     {% endfor %}
   </table>
   <p class="muted">有进行中的任务时本页每 5 秒自动刷新。</p>
   {% endif %}
 </div>
+{% if tasks | selectattr('status', 'equalto', 'failed') | list %}
+<script>
+document.querySelectorAll('button.retry').forEach(b => b.onclick = async () => {
+  b.disabled = true;
+  try {
+    const r = await fetch('/api/tasks/' + b.dataset.id + '/retry', {method: 'POST'});
+    if (!r.ok) {
+      let detail = r.status;
+      try { detail = (await r.json()).detail || r.status; } catch (_) {}
+      // 409 常见于任务已被别处重试并开始跑：刷新页面同步真实状态
+      alert('重试失败：' + detail);
+      location.reload();
+      return;
+    }
+    location.reload();
+  } catch (err) {
+    b.disabled = false;
+    alert('重试失败：' + err.message + '（可刷新页面查看最新状态）');
+  }
+});
+</script>
+{% endif %}
 {% if tasks | selectattr('status', 'in', ['queued', 'running']) | list %}
 <script>setTimeout(() => location.reload(), 5000);</script>
 {% endif %}

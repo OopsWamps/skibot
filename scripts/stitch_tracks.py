@@ -35,6 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import numpy as np  # noqa: E402
 
+from skibot import artifacts  # noqa: E402
 from skibot import metrics as M  # noqa: E402
 from skibot.assess import Assessment  # noqa: E402
 from skibot.reference import load as load_refs  # noqa: E402
@@ -44,10 +45,10 @@ from skibot.trc_io import load_kp, stitch, write_trc  # noqa: E402
 from skibot.view import ViewResult, classify_view, classify_view_frames  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-WORK = ROOT / "results" / "video"
+WORK = artifacts.work_dir(ROOT / "results", "video")
 S2D_DIR = WORK / "video_blurred_Sports2D"
 BLURRED = WORK / "video_blurred.mp4"
-ANNOTATED = WORK / "video_annotated.mp4"
+ANNOTATED = artifacts.annotated_path(WORK)
 
 TRC_PREFIX = "video_blurred_Sports2D_px_"
 # 默认值 = video.mp4 那次人工核对的结论，命令行参数可覆盖
@@ -103,16 +104,17 @@ def main() -> int:
                           person={"id": 2, "selection":
                                   f"轨迹缝合：主体 {args.main_pid}，开头 0-{args.donor_last} 帧借用 "
                                   f"{args.donor_pid}（{args.main_pid} 前 2.7 秒串到右侧背景人物）"})
-    assessment = Assessment(report=report, series=series, frame_view=frame_view)
+    assessment = Assessment(report=report, series=series, frame_view=frame_view,
+                            view=vr, refs=refs)
     v = report["view"]
     print(f"[stitch] 视角: {v['detected']} (score={v['score']:.2f}, {v['n_valid_frames']} 帧)")
     for m in report["metrics"]:
         print(f"[stitch] {m['metric']}: 中位 {m['median_deg']}°, "
               f"有效 {m['n_valid_frames']} 帧, 区间内 {m['pct_in_range']}")
-    save_json(report, WORK / "report.json")
+    save_json(report, artifacts.report_path(WORK))
     print(f"[stitch] 报告: {WORK / 'report.json'}")
 
-    anno = render_annotated(BLURRED, kp, assessment, refs, args.level, ANNOTATED)
+    anno = render_annotated(BLURRED, kp, assessment, ANNOTATED)
     print(f"[stitch] 标注视频: {anno}")
     return 0
 

@@ -37,6 +37,16 @@ SIDE_JOINTS: dict[str, tuple[int, int, int, int]] = {
     "right": (R_SHOULDER, R_HIP, R_KNEE, R_ANKLE),
 }
 
+
+def pick_side(left_conf: float, right_conf: float) -> str:
+    """选侧规则的唯一实现：置信度高的一侧，平票取左。
+
+    二维（metrics.select_side）与三维（metrics3d.select_side）共用——规则
+    写两份时，平票语义漂移不会有任何测试失败，只在左右置信度打平的真实
+    帧上悄悄分歧。
+    """
+    return "left" if left_conf >= right_conf else "right"
+
 # 质量统计口径的核心八点（验证进展 #3 的人物偏小/低置信度提示用）：
 # 躯干与下肢大关节。雪场远景缺脸/手脚趾很常见，全点口径会让提示常驻失去区分度。
 CORE_JOINTS = (L_SHOULDER, R_SHOULDER, L_HIP, R_HIP, L_KNEE, R_KNEE, L_ANKLE, R_ANKLE)

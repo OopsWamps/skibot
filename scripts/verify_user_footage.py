@@ -16,8 +16,10 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from _footage import RESULTS, VERIFY_PREVIEW, strip_frames  # noqa: E402
+from skibot import artifacts  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -78,8 +80,8 @@ def main() -> int:
         if not d.is_dir():
             continue
         bv = d.name
-        rep_path = d / "report.json"
-        ann = d / f"{bv}_annotated.mp4"
+        rep_path = artifacts.report_path(d)
+        ann = artifacts.annotated_path(d)
         if not rep_path.exists() or not ann.exists():
             lines.append(f"{bv}\tINCOMPLETE (report={rep_path.exists()} ann={ann.exists()})")
             continue

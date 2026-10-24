@@ -14,6 +14,8 @@
 - 缺帧：关节不可得时坐标 NaN、confidence 0；整帧不可得时该帧全部如此。
   全零帧按缺帧处理（valid_mask 为 False），不当作"所有关节缩到原点"。
 - source：数据来源标签（"mock"/"motionbert"/...），进报告的数据来源说明。
+- gravity_source：重力来源标签，GRAVITY_SOURCES 之一或 "unknown"，构造时
+  校验（ADR-0001 §5.1 的强制标注；unknown 时躯干前倾不出数）。
 
 提升适配器是纯接缝：输入二维 Halpe-26 关键点，输出 Skeleton3D。换模型只换
 适配器，评估流程与指标代码不动。
@@ -31,6 +33,8 @@ from .skeleton import CORE_JOINTS, L_HIP, R_HIP
 CONF_MIN_3D = 0.3          # 三维关节进入指标的最低置信度（暂定，issue 04 定稿）
 MIN_CORE_JOINTS = 4        # 一帧至少要有几个核心关节可用
 DEFAULT_GRAVITY_UP = (0.0, 1.0, 0.0)
+# 重力来源（ADR-0001 §5.1）：报告必须标注；unknown 时躯干前倾不出数。
+GRAVITY_SOURCES = ("calibrated", "adapter", "image_vertical")
 
 
 @dataclass
@@ -45,12 +49,20 @@ class Skeleton3D:
     gravity_up: np.ndarray = field(
         default_factory=lambda: np.array(DEFAULT_GRAVITY_UP, dtype=float))
     source: str = "unknown"
+    # 重力来源：calibrated / adapter / image_vertical 之一（GRAVITY_SOURCES），
+    # unknown = 不可信，躯干前倾不出数。契约字段，构造时校验——此前住在
+    # meta dict 的魔法键里，键名拼错只会静默降级。
+    gravity_source: str = "unknown"
     meta: dict = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         self.joints = np.array(self.joints, dtype=float, copy=True)
         self.confidence = np.array(self.confidence, dtype=float, copy=True)
         self.gravity_up = np.array(self.gravity_up, dtype=float, copy=True)
+        if self.gravity_source != "unknown" and self.gravity_source not in GRAVITY_SOURCES:
+            raise ValueError(
+                f"gravity_source 必须是 {GRAVITY_SOURCES} 之一或 'unknown'，"
+                f"收到 {self.gravity_source!r}")
 
         if self.joints.ndim != 3 or self.joints.shape[1:] != (26, 3):
             raise ValueError(f"joints 形状必须是 (T, 26, 3)，收到 {self.joints.shape}")
@@ -149,5 +161,5 @@ class MockLifter:
         # 平面骨架、图像竖直当重力：重力来源就必须如实标成 image_vertical，
         # 不能冒充 adapter 的规范化输出。
         return Skeleton3D(joints=joints, confidence=conf, source=self.name,
-                          meta={"adapter": type(self).__name__,
-                                "gravity_source": "image_vertical"})
+                          gravity_source="image_vertical",
+                          meta={"adapter": type(self).__name__})

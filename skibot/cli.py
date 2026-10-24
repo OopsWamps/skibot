@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -16,12 +17,13 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")  # Windows GBK 控制台兜底
 
 from . import __version__
+from . import artifacts
+from . import finalize
 from .assess import assess
 from .backend import DEFAULT_TRACK_ORDER, discover_tracks, run_sports2d
 from .privacy import blur_faces
 from .reference import load as load_refs
 from .render import probe_video, render_annotated
-from .report import save_json
 from .select_person import sample_pants_pixels, select_person
 from .trc_io import load_kp
 
@@ -41,18 +43,34 @@ class AnalyzeOptions:
 
 
 def analyze_one(video: Path, opts: AnalyzeOptions) -> Path:
-    work = opts.result_dir / video.stem
+    work = artifacts.work_dir(opts.result_dir, video.stem)
     work.mkdir(parents=True, exist_ok=True)
 
     src = video
     if opts.blur:
-        src, n_faces = blur_faces(video, work / f"{video.stem}_blurred.mp4")
+        src, n_faces = blur_faces(video, artifacts.blurred_path(work))
         print(f"[skibot] 人脸打码：检出 {n_faces} 处（Haar 召回有限，雪镜/面罩场景见 privacy.py 说明）")
+    else:
+        # 同一结果目录里上一次打码留下的副本必须删掉：改选按副本是否存在
+        # 推断首次分析的打码设置，留着旧副本会拿到过期画面
+        artifacts.blurred_path(work).unlink(missing_ok=True)
 
     print(f"[skibot] Sports2D 分析中：{src}")
+    run_start = time.time()
     run_sports2d(src, work, opts.track_order)
 
     tracks = discover_tracks(work)
+    # 只认本次运行产出（新建或更新）的轨迹。backend 只按文件名找轨迹，
+    # 复用同一结果目录重跑时，上一次的旧 trc 在 Sports2D 失败（崩溃/超时/
+    # 可执行文件缺失）后仍会留在原地，直接采纳会产出基于旧关键点的"成功"
+    # 报告。不预先删除旧轨迹——重跑失败时它们还是旧报告改选与预览的
+    # 数据源（web 重试与 CLI 重跑受同一道防线保护）。
+    fresh = {pid: p for pid, p in tracks.items()
+             if p.stat().st_mtime >= run_start}
+    if not fresh:
+        raise FileNotFoundError(
+            f"Sports2D 没有产出新轨迹（保留原有 {len(tracks)} 条旧轨迹），检查其日志")
+    tracks = fresh
     kps = {pid: load_kp(p) for pid, p in tracks.items()}
     print(f"[skibot] 检测到 {len(kps)} 个人物轨迹：{sorted(kps)}")
 
@@ -89,19 +107,18 @@ def analyze_one(video: Path, opts: AnalyzeOptions) -> Path:
 
     refs = load_refs(opts.refs)
     _, frame_h, fps = probe_video(src)
-    res = assess(kp, level=opts.level, refs=refs, label=str(video),
-                 person={"id": chosen, "selection": reason}, frame_height=frame_h,
-                 fps=fps)
+    res = finalize.assess_and_publish(
+        kp, src, refs=refs, level=opts.level, label=str(video),
+        report_path=artifacts.report_path(work),
+        video_path=artifacts.annotated_path(work),
+        person={"id": chosen, "selection": reason},
+        frame_height=frame_h, fps=fps)
     report = res.report
     print(f"[skibot] 视角判定：{report['view']['detected']}"
           f"（score={report['view']['score']:.2f}，{report['view']['n_valid_frames']} 有效帧）")
-
-    out = save_json(report, work / "report.json")
+    out = artifacts.report_path(work)
     print(f"[skibot] 报告已写出：{out}")
-
-    anno = render_annotated(src, kp, res, refs, opts.level,
-                            work / f"{video.stem}_annotated.mp4")
-    print(f"[skibot] 标注视频（自绘，仅选中者）：{anno}")
+    print(f"[skibot] 标注视频（自绘，仅选中者）：{artifacts.annotated_path(work)}")
     return out
 
 
@@ -141,6 +158,8 @@ def main(argv: list[str] | None = None) -> int:
     w.add_argument("--host", default="127.0.0.1", help="监听地址（默认本机）")
     w.add_argument("--result-dir", type=Path, default=Path("web_results"),
                    help="分析产物目录（默认 web_results/）")
+    w.add_argument("--no-precheck", action="store_true",
+                   help="关闭上传预检（默认开启：容器/分辨率/时长/人物占比）")
 
     args = parser.parse_args(argv)
 
@@ -148,18 +167,19 @@ def main(argv: list[str] | None = None) -> int:
         import uvicorn
 
         from .web.app import create_app
-        uvicorn.run(create_app(args.result_dir), host=args.host, port=args.port,
-                    log_level="info")
+        uvicorn.run(create_app(args.result_dir,
+                               enable_precheck=not args.no_precheck),
+                    host=args.host, port=args.port, log_level="info")
         return 0
 
     if args.cmd == "render":
         kp = load_kp(args.trc)
         refs = load_refs(args.refs)
         res = assess(kp, level=args.level, refs=refs, label=str(args.trc))
-        if args.view is None and res.report["view"]["detected"] == "ambiguous":
+        if args.view is None and res.view.view == "ambiguous":
             print("[skibot] 视角判定不明确且未指定 --view，叠加层只画骨架；要出指标用 --view 强制",
                   file=sys.stderr)
-        out = render_annotated(args.video, kp, res, refs, args.level, args.out,
+        out = render_annotated(args.video, kp, res, args.out,
                                view=args.view)
         print(f"[skibot] 标注视频已写出：{out}")
         return 0
