@@ -18,9 +18,15 @@
 
 来源：Bon I, Očić M, Cigrovski V, Rupčić T, Knjaz D. *What Are Kinematic and
 Kinetic Differences between Short and Parallel Turn in Alpine Skiing?*
-Int J Environ Res Public Health 2021;18(6):3029. PMC8000885。
+Int J Environ Res Public Health 2021;18(6):3029。PMC7927052。
 样本：9 名男性滑雪教练（33.4 岁），20° 坡，SL 板，90 转弯/弯型；
-无线动捕 + 鞋垫压力。角度为髋-膝-踝（膝）/肩-髋-膝（髋）夹角，弯末时刻。
+Xsens MVN Link 17-IMU 240Hz（2026-10-26 全文核验；此前记"鞋垫压力"有误）。
+角度为髋-膝-踝夹角（膝）；髋角原文只写 "hip flexion"（Xsens 骨盆-大腿关节
+角），"肩-髋-膝（髋）" 是仓库推断而非原文——与我们的 `hip_flexion_3pt`
+对照时差躯干前倾分量，判定对口径敏感。PT/ST = 平行式转弯/短转弯（两种
+技术；表中左/右转弯是弯向分组，非测量法）。弯末时刻 = 重心最低点、外板
+卸压前。锚点对比已执行：**不通过**，详见 `docs/lit_anchor_validation.md`
+（issue 07）。
 
 | 变量 | 平行弯 PT（均值±SD） | 短弯 ST（均值±SD） |
 |---|---|---|

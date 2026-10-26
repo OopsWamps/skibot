@@ -15,3 +15,5 @@ datasets/recreational_ski/results_clips/
 reconcile_video_run*.log
 .mypy_cache/
 web_results/
+models/
+third_party/

@@ -23,6 +23,8 @@ L_WRIST, R_WRIST = 9, 10
 L_HIP, R_HIP = 11, 12
 L_KNEE, R_KNEE = 13, 14
 L_ANKLE, R_ANKLE = 15, 16
+# Halpe 扩展点（body_with_feet 模型的 26 点里 17~25）：
+HEAD_TOP, NECK, HIP_CENTER = 17, 18, 19
 
 # 参与角度计算的最低置信度门槛（view 与 metrics 共用）
 CONF_MIN = 0.3
@@ -66,18 +68,34 @@ def size_score(kp: np.ndarray) -> float:
         lens.append(max(w, h))
     return float(np.median(lens)) if lens else 0.0
 
-# Halpe-26 名字 → trc 里可能出现的写法。TODO_VALIDATE: 首次真视频运行时
-# 核对 Sports2D 实际输出的 marker 名并补全此映射。
+# Halpe-26 名字 → trc 里可能出现的写法。2026-10-26 已按 Sports2D
+# body_with_feet 的实际输出（px trc 22 marker：Hip/RHip/…/Neck/Head/Nose/
+# RShoulder/…）核对补全——此前只有 12 个映射，肘腕头颈髋中与十个脚点
+# 全部落空（NaN），MotionBERT 有 4 个输入通道恒为零。眼耳（1~4）在该
+# marker 集里不存在，保持缺测。
 NAME_ALIASES: dict[int, tuple[str, ...]] = {
     0: ("Nose", "Head_gesture", "nose"),
     3: ("LEar", "L_Ear", "lear"),
     4: ("REar", "R_Ear", "rear"),
     5: ("LShoulder", "L_Shoulder", "lshoulder"),
     6: ("RShoulder", "R_Shoulder", "rshoulder"),
+    7: ("LElbow", "L_Elbow", "lelbow"),
+    8: ("RElbow", "R_Elbow", "relbow"),
+    9: ("LWrist", "L_Wrist", "lwrist"),
+    10: ("RWrist", "R_Wrist", "rwrist"),
     11: ("LHip", "L_Hip", "lhip"),
     12: ("RHip", "R_Hip", "rhip"),
     13: ("LKnee", "L_Knee", "lknee"),
     14: ("RKnee", "R_Knee", "rknee"),
     15: ("LAnkle", "L_Ankle", "lankle"),
     16: ("RAnkle", "R_Ankle", "rankle"),
+    17: ("Head", "head"),                # 头顶
+    18: ("Neck", "neck"),
+    19: ("Hip", "hip"),                  # 髋中（Sports2D 中央髋 marker）
+    20: ("LBigToe", "L_BigToe", "lbigtoe"),
+    21: ("RBigToe", "R_BigToe", "rbigtoe"),
+    22: ("LSmallToe", "L_SmallToe", "lsmalltoe"),
+    23: ("RSmallToe", "R_SmallToe", "rsmalltoe"),
+    24: ("LHeel", "L_Heel", "lheel"),
+    25: ("RHeel", "R_Heel", "rheel"),
 }

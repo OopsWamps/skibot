@@ -1,0 +1,342 @@
+{
+ "clips": [
+  {
+   "clip": "datasets\\recreational_ski\\results_channel\\BV1js4y137Mr",
+   "trc": "datasets\\recreational_ski\\results_channel\\BV1js4y137Mr\\BV1js4y137Mr_Sports2D\\BV1js4y137Mr_Sports2D_px_person00.trc",
+   "person_id": 0,
+   "fps": 30.0,
+   "n_frames": 1190,
+   "n_turns_detected": 0,
+   "n_turns_discarded": 12,
+   "n_turns_used": 0,
+   "n_turns_guarded": 0,
+   "max_stability_delta_deg": 0.0,
+   "weight_name": "best_epoch.bin",
+   "turns": []
+  },
+  {
+   "clip": "datasets\\recreational_ski\\results_channel\\BV1LM41137hm",
+   "trc": "datasets\\recreational_ski\\results_channel\\BV1LM41137hm\\BV1LM41137hm_Sports2D\\BV1LM41137hm_Sports2D_px_person05.trc",
+   "person_id": 5,
+   "fps": 25.0,
+   "n_frames": 1232,
+   "n_turns_detected": 4,
+   "n_turns_discarded": 25,
+   "n_turns_used": 4,
+   "n_turns_guarded": 0,
+   "max_stability_delta_deg": 93.65,
+   "weight_name": "best_epoch.bin",
+   "turns": [
+    {
+     "turn_index": 0,
+     "direction": "left_turn",
+     "peak_lean_deg": 8.53,
+     "confidence": 0.6726805768824135,
+     "sample_frame": 160,
+     "outer_knee": 76.75105378669964,
+     "inner_knee": 122.21806961734877,
+     "outer_hip": 83.72880525299547,
+     "outer_knee_at_peak": 89.43276718232052,
+     "inner_knee_at_peak": 124.33662876429905,
+     "outer_hip_at_peak": 97.40770084519157,
+     "outer_knee_min_in_turn": 76.75105378669964,
+     "inner_knee_min_in_turn": 110.99512745366619,
+     "outer_knee_2d": 122.9108491360356,
+     "inner_knee_2d": 141.1631356491555,
+     "outer_hip_2d": 122.9734546248073,
+     "outer_knee_2d_at_peak": 135.2231959315909,
+     "inner_knee_2d_at_peak": 174.37441758793236,
+     "outer_hip_2d_at_peak": 140.20260267318795
+    },
+    {
+     "turn_index": 1,
+     "direction": "right_turn",
+     "peak_lean_deg": -18.0,
+     "confidence": 0.5287763913809835,
+     "sample_frame": 242,
+     "outer_knee": 52.972534101641486,
+     "inner_knee": 82.27284005910185,
+     "outer_hip": 98.20008658837581,
+     "outer_knee_at_peak": 61.32975568117057,
+     "inner_knee_at_peak": 101.18431682755902,
+     "outer_hip_at_peak": 89.79312862739116,
+     "outer_knee_min_in_turn": 52.972534101641486,
+     "inner_knee_min_in_turn": 82.27284005910185,
+     "outer_knee_2d": 164.4529344799931,
+     "inner_knee_2d": 157.00823762671632,
+     "outer_hip_2d": 173.32332940347817,
+     "outer_knee_2d_at_peak": 161.8386447306743,
+     "inner_knee_2d_at_peak": 170.73950221664296,
+     "outer_hip_2d_at_peak": 158.27795318973568
+    },
+    {
+     "turn_index": 2,
+     "direction": "left_turn",
+     "peak_lean_deg": 10.65,
+     "confidence": 0.6210730783499911,
+     "sample_frame": 646,
+     "outer_knee": 86.13036797766763,
+     "inner_knee": 87.20790196537277,
+     "outer_hip": 118.02202745755112,
+     "outer_knee_at_peak": 131.77947620249617,
+     "inner_knee_at_peak": 102.36559460297245,
+     "outer_hip_at_peak": 135.4114231081851,
+     "outer_knee_min_in_turn": 62.84131495889197,
+     "inner_knee_min_in_turn": 66.62873949715592,
+     "outer_knee_2d": 150.1247526250554,
+     "inner_knee_2d": 144.65488600116927,
+     "outer_hip_2d": 175.09305354152778,
+     "outer_knee_2d_at_peak": 159.03218253228806,
+     "inner_knee_2d_at_peak": 145.83475283674625,
+     "outer_hip_2d_at_peak": 144.4039886563121
+    },
+    {
+     "turn_index": 3,
+     "direction": "right_turn",
+     "peak_lean_deg": -15.21,
+     "confidence": 0.6542961162357624,
+     "sample_frame": 713,
+     "outer_knee": 105.5793816877405,
+     "inner_knee": 89.08493216791705,
+     "outer_hip": 106.76018583106483,
+     "outer_knee_at_peak": 55.05499678208703,
+     "inner_knee_at_peak": 58.784470172327616,
+     "outer_hip_at_peak": 72.68752864392442,
+     "outer_knee_min_in_turn": 50.39759922641107,
+     "inner_knee_min_in_turn": 56.837305571211566,
+     "outer_knee_2d": 127.68320470473242,
+     "inner_knee_2d": 123.98526650571588,
+     "outer_hip_2d": 116.81044869883048,
+     "outer_knee_2d_at_peak": 88.71077439596387,
+     "inner_knee_2d_at_peak": 117.52592043985658,
+     "outer_hip_2d_at_peak": 100.29037849266098
+    }
+   ]
+  },
+  {
+   "clip": "datasets\\recreational_ski\\results_channel\\BV19T411h7Ub",
+   "trc": "datasets\\recreational_ski\\results_channel\\BV19T411h7Ub\\BV19T411h7Ub_Sports2D\\BV19T411h7Ub_Sports2D_px_person02.trc",
+   "person_id": 2,
+   "fps": 30.0,
+   "n_frames": 1510,
+   "n_turns_detected": 1,
+   "n_turns_discarded": 20,
+   "n_turns_used": 1,
+   "n_turns_guarded": 0,
+   "max_stability_delta_deg": 1.77,
+   "weight_name": "best_epoch.bin",
+   "turns": [
+    {
+     "turn_index": 0,
+     "direction": "right_turn",
+     "peak_lean_deg": -10.48,
+     "confidence": 0.5481914638609485,
+     "sample_frame": 115,
+     "outer_knee": 140.00165879918248,
+     "inner_knee": 117.72621233978639,
+     "outer_hip": 125.15525670682024,
+     "outer_knee_at_peak": 84.3182358846183,
+     "inner_knee_at_peak": 63.81824305841879,
+     "outer_hip_at_peak": 128.17826051229343,
+     "outer_knee_min_in_turn": 52.66520665719015,
+     "inner_knee_min_in_turn": 46.263627362958104,
+     "outer_knee_2d": 164.65942944905902,
+     "inner_knee_2d": 163.7471258983147,
+     "outer_hip_2d": 177.1928272615275,
+     "outer_knee_2d_at_peak": 134.1210709242788,
+     "inner_knee_2d_at_peak": 71.8305602523892,
+     "outer_hip_2d_at_peak": 163.17225381225387
+    }
+   ]
+  }
+ ],
+ "comparison_turn_end": [
+  {
+   "direction": "left_turn",
+   "metric": "outer_knee",
+   "sampling": "turn_end",
+   "n_turns": 2,
+   "our_mean": 81.4,
+   "our_sd": 4.7,
+   "bon_mean": 141.46,
+   "bon_sd": 3.7,
+   "band_2sd": "[134.1, 148.9]",
+   "delta": -60.0,
+   "verdict": "样本不足（仅数值对照）"
+  },
+  {
+   "direction": "left_turn",
+   "metric": "inner_knee",
+   "sampling": "turn_end",
+   "n_turns": 2,
+   "our_mean": 104.7,
+   "our_sd": 17.5,
+   "bon_mean": 115.69,
+   "bon_sd": 6.23,
+   "band_2sd": "[103.2, 128.2]",
+   "delta": -11.0,
+   "verdict": "样本不足（仅数值对照）"
+  },
+  {
+   "direction": "left_turn",
+   "metric": "outer_hip",
+   "sampling": "turn_end",
+   "n_turns": 2,
+   "our_mean": 100.9,
+   "our_sd": 17.1,
+   "bon_mean": 164.99,
+   "bon_sd": 4.71,
+   "band_2sd": "[155.6, 174.4]",
+   "delta": -64.1,
+   "verdict": "样本不足（仅数值对照）"
+  },
+  {
+   "direction": "right_turn",
+   "metric": "outer_knee",
+   "sampling": "turn_end",
+   "n_turns": 3,
+   "our_mean": 99.5,
+   "our_sd": 35.8,
+   "bon_mean": 148.74,
+   "bon_sd": 3.46,
+   "band_2sd": "[141.8, 155.7]",
+   "delta": -49.2,
+   "verdict": "不通过"
+  },
+  {
+   "direction": "right_turn",
+   "metric": "inner_knee",
+   "sampling": "turn_end",
+   "n_turns": 3,
+   "our_mean": 96.4,
+   "our_sd": 15.4,
+   "bon_mean": 117.49,
+   "bon_sd": 5.5,
+   "band_2sd": "[106.5, 128.5]",
+   "delta": -21.1,
+   "verdict": "不通过"
+  },
+  {
+   "direction": "right_turn",
+   "metric": "outer_hip",
+   "sampling": "turn_end",
+   "n_turns": 3,
+   "our_mean": 110.0,
+   "our_sd": 11.2,
+   "bon_mean": 166.2,
+   "bon_sd": 2.53,
+   "band_2sd": "[161.1, 171.3]",
+   "delta": -56.2,
+   "verdict": "不通过"
+  }
+ ],
+ "comparison_apex": [
+  {
+   "direction": "left_turn",
+   "metric": "outer_knee",
+   "sampling": "apex",
+   "n_turns": 2,
+   "our_mean": 110.6,
+   "our_sd": 21.2,
+   "bon_mean": 141.46,
+   "bon_sd": 3.7,
+   "band_2sd": "[134.1, 148.9]",
+   "delta": -30.9,
+   "verdict": "样本不足（仅数值对照）"
+  },
+  {
+   "direction": "left_turn",
+   "metric": "inner_knee",
+   "sampling": "apex",
+   "n_turns": 2,
+   "our_mean": 113.4,
+   "our_sd": 11.0,
+   "bon_mean": 115.69,
+   "bon_sd": 6.23,
+   "band_2sd": "[103.2, 128.2]",
+   "delta": -2.3,
+   "verdict": "样本不足（仅数值对照）"
+  },
+  {
+   "direction": "left_turn",
+   "metric": "outer_hip",
+   "sampling": "apex",
+   "n_turns": 2,
+   "our_mean": 116.4,
+   "our_sd": 19.0,
+   "bon_mean": 164.99,
+   "bon_sd": 4.71,
+   "band_2sd": "[155.6, 174.4]",
+   "delta": -48.6,
+   "verdict": "样本不足（仅数值对照）"
+  },
+  {
+   "direction": "right_turn",
+   "metric": "outer_knee",
+   "sampling": "apex",
+   "n_turns": 3,
+   "our_mean": 66.9,
+   "our_sd": 12.6,
+   "bon_mean": 148.74,
+   "bon_sd": 3.46,
+   "band_2sd": "[141.8, 155.7]",
+   "delta": -81.8,
+   "verdict": "不通过"
+  },
+  {
+   "direction": "right_turn",
+   "metric": "inner_knee",
+   "sampling": "apex",
+   "n_turns": 3,
+   "our_mean": 74.6,
+   "our_sd": 18.9,
+   "bon_mean": 117.49,
+   "bon_sd": 5.5,
+   "band_2sd": "[106.5, 128.5]",
+   "delta": -42.9,
+   "verdict": "不通过"
+  },
+  {
+   "direction": "right_turn",
+   "metric": "outer_hip",
+   "sampling": "apex",
+   "n_turns": 3,
+   "our_mean": 96.9,
+   "our_sd": 23.2,
+   "bon_mean": 166.2,
+   "bon_sd": 2.53,
+   "band_2sd": "[161.1, 171.3]",
+   "delta": -69.3,
+   "verdict": "不通过"
+  }
+ ],
+ "overall_turn_end": "不通过",
+ "overall_apex": "不通过",
+ "agreement_2d_3d": {
+  "outer_knee_turn_end": {
+   "n": 5,
+   "mean_abs_3d_minus_2d_deg": 53.7
+  },
+  "outer_knee_apex": {
+   "n": 5,
+   "mean_abs_3d_minus_2d_deg": 51.4
+  },
+  "inner_knee_turn_end": {
+   "n": 5,
+   "mean_abs_3d_minus_2d_deg": 46.4
+  },
+  "inner_knee_apex": {
+   "n": 5,
+   "mean_abs_3d_minus_2d_deg": 46.0
+  },
+  "outer_hip_turn_end": {
+   "n": 5,
+   "mean_abs_3d_minus_2d_deg": 46.7
+  },
+  "outer_hip_apex": {
+   "n": 5,
+   "mean_abs_3d_minus_2d_deg": 36.6
+  }
+ },
+ "bon_pt_source": "Bon et al. 2021, IJERPH 18(6):3029, PT 弯末，180°=伸直"
+}

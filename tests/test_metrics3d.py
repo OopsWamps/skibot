@@ -277,6 +277,42 @@ def test_scale_invariance():
     print("  坐标单位缩放 1e-8~1e12：六项结果不变 ✓")
 
 
+def test_frontal_lean_sign():
+    """符号契约：躯干顶向受试者左侧倾为正（正 = 左转）。
+
+    整个内外膝/弯向映射（issue 07 锚点、phases 换刃）都依赖这个符号，
+    此前只有 ==0 断言没有符号测试——一次重构翻转符号不会有测试失败。
+    """
+    a = np.radians(15.0)
+    mid = (-np.sin(a) * 0.5, np.cos(a) * 0.5, 0.0)      # 躯干轴顶向 −x（解剖左）
+    s_dir = (-np.cos(a), -np.sin(a), 0.0)               # 肩线垂直躯干轴，左肩低
+    lean_left = {
+        L_SHOULDER: (mid[0] + 0.1 * s_dir[0], mid[1] + 0.1 * s_dir[1], 0.0),
+        R_SHOULDER: (mid[0] - 0.1 * s_dir[0], mid[1] - 0.1 * s_dir[1], 0.0),
+        L_HIP: (-0.1, 0.0, 0.0), R_HIP: (0.1, 0.0, 0.0),
+        L_KNEE: (-0.1, -0.4, 0.0), R_KNEE: (0.1, -0.4, 0.0),
+        L_ANKLE: (-0.1, -0.8, 0.0), R_ANKLE: (0.1, -0.8, 0.0),
+    }
+    s = series(lean_left)
+    assert abs(s["trunk_lean_frontal"] - 15.0) < 1e-6, s["trunk_lean_frontal"]
+    assert abs(s["trunk_lean_total"] - 15.0) < 1e-6
+    assert abs(s["trunk_lean_sagittal"]) < 1e-6
+    # 向右倾（躯干顶朝 +x，解剖右）应为负；显式构造，别整体镜像——
+    # 镜像会把解剖左右反掉，不是有效骨架
+    mid_r = (np.sin(a) * 0.5, np.cos(a) * 0.5, 0.0)
+    s_dir_r = (-np.cos(a), np.sin(a), 0.0)  # 左肩比右肩高
+    lean_right = {
+        L_SHOULDER: (mid_r[0] + 0.1 * s_dir_r[0], mid_r[1] + 0.1 * s_dir_r[1], 0.0),
+        R_SHOULDER: (mid_r[0] - 0.1 * s_dir_r[0], mid_r[1] - 0.1 * s_dir_r[1], 0.0),
+        L_HIP: (-0.1, 0.0, 0.0), R_HIP: (0.1, 0.0, 0.0),
+        L_KNEE: (-0.1, -0.4, 0.0), R_KNEE: (0.1, -0.4, 0.0),
+        L_ANKLE: (-0.1, -0.8, 0.0), R_ANKLE: (0.1, -0.8, 0.0),
+    }
+    s2 = series(lean_right)
+    assert abs(s2["trunk_lean_frontal"] + 15.0) < 1e-6, s2["trunk_lean_frontal"]
+    print("  冠状前倾符号：向左倾为正 ✓")
+
+
 def test_gravity_tilt_changes_only_trunk():
     base = series(upright_pose())
     g = (0.0, np.cos(np.radians(10)), np.sin(np.radians(10)))
@@ -497,6 +533,7 @@ if __name__ == "__main__":
     test_trunk_total_independent_of_shoulder_line()
     test_per_frame_gravity()
     test_scale_invariance()
+    test_frontal_lean_sign()
     test_gravity_tilt_changes_only_trunk()
     test_projection_equivalence()
     test_missing_and_degenerate()

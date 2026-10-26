@@ -108,6 +108,32 @@ def test_keypoints_halpe_aliases_and_slots():
     print("  keypoints_halpe 别名匹配与槽位 ✓")
 
 
+def test_keypoints_halpe_full_body22():
+    # Sports2D body_with_feet 实际输出的 22 marker（2026-10-26 按
+    # results_channel 真实 trc 表头核对）：肘腕头颈髋中与十个脚点此前
+    # 缺别名全部落空，MotionBERT 有 4 个输入通道恒为零
+    names = ["Hip", "RHip", "RKnee", "RAnkle", "RBigToe", "RSmallToe",
+             "RHeel", "LHip", "LKnee", "LAnkle", "LBigToe", "LSmallToe",
+             "LHeel", "Neck", "Head", "Nose", "RShoulder", "RElbow",
+             "RWrist", "LShoulder", "LElbow", "LWrist"]
+    xyz = np.zeros((1, 22, 3))
+    xyz[:, :, 0] = np.arange(22)[None, :]  # 每列唯一坐标用于核对槽位
+    out = keypoints_halpe(names, xyz)
+    expect = {"Nose": 0, "LShoulder": 5, "RShoulder": 6, "LElbow": 7,
+              "RElbow": 8, "LWrist": 9, "RWrist": 10, "LHip": 11, "RHip": 12,
+              "LKnee": 13, "RKnee": 14, "LAnkle": 15, "RAnkle": 16,
+              "Head": 17, "Neck": 18, "Hip": 19, "LBigToe": 20, "RBigToe": 21,
+              "LSmallToe": 22, "RSmallToe": 23, "LHeel": 24, "RHeel": 25}
+    for marker, slot in expect.items():
+        col = names.index(marker)
+        assert out[0, slot, 0] == col, f"{marker} 应映射到槽位 {slot}"
+        assert out[0, slot, 2] == 1.0
+    # 眼耳不在该 marker 集：保持缺测
+    for slot in (1, 2, 3, 4):
+        assert np.isnan(out[0, slot, 0]) and out[0, slot, 2] == 0.0
+    print("  22 marker 全量映射（含肘腕头颈髋中脚点）✓")
+
+
 def test_keypoints_halpe_per_frame_conf():
     # L_Hip 第 2 帧丢点：conf 应逐帧给 1/0，而不是整列一个值
     names = ["Nose", "L_Hip"]
@@ -251,6 +277,7 @@ if __name__ == "__main__":
     test_parse_trc_empty_cell_is_nan()
     test_parse_trc_no_data_rows_raises()
     test_keypoints_halpe_aliases_and_slots()
+    test_keypoints_halpe_full_body22()
     test_keypoints_halpe_per_frame_conf()
     test_load_kp_and_write_roundtrip()
     test_write_trc_row_count_guard()

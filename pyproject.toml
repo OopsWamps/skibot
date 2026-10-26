@@ -17,6 +17,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["httpx>=0.27"]                                      # fastapi TestClient
+lift3d = ["torch>=2.0"]                                     # 三维提升（CUDA 构建另加 --index-url https://download.pytorch.org/whl）
 
 [project.scripts]
 skibot = "skibot.cli:main"

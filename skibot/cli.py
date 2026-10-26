@@ -40,6 +40,7 @@ class AnalyzeOptions:
     refs: Path = DEFAULT_REFS
     color: str | None = None
     person: int | None = None
+    lifter: str = "none"  # 三维提升：none（默认，二期回归基线）/ motionbert
 
 
 def analyze_one(video: Path, opts: AnalyzeOptions) -> Path:
@@ -107,15 +108,26 @@ def analyze_one(video: Path, opts: AnalyzeOptions) -> Path:
 
     refs = load_refs(opts.refs)
     _, frame_h, fps = probe_video(src)
+    # 三维提升是可选旁路：默认关，二维报告与序列逐位不变（spec「三维提升」）
+    lifter = None
+    if opts.lifter == "motionbert":
+        from .motionbert import MotionBERTLifter  # torch 可选依赖，按需加载
+        lifter = MotionBERTLifter()
+        print(f"[skibot] 三维提升：motionbert（权重 {lifter.checkpoint}）")
     res = finalize.assess_and_publish(
         kp, src, refs=refs, level=opts.level, label=str(video),
         report_path=artifacts.report_path(work),
         video_path=artifacts.annotated_path(work),
         person={"id": chosen, "selection": reason},
-        frame_height=frame_h, fps=fps)
+        frame_height=frame_h, fps=fps, lifter=lifter)
     report = res.report
     print(f"[skibot] 视角判定：{report['view']['detected']}"
           f"（score={report['view']['score']:.2f}，{report['view']['n_valid_frames']} 有效帧）")
+    if res.skeleton3d is not None:
+        n_valid = int(res.skeleton3d.valid_mask.sum())
+        print(f"[skibot] 三维骨架：{report['data_source']}，"
+              f"有效帧 {n_valid}/{res.skeleton3d.n_frames}，"
+              f"重力来源 {res.skeleton3d.gravity_source}")
     out = artifacts.report_path(work)
     print(f"[skibot] 报告已写出：{out}")
     print(f"[skibot] 标注视频（自绘，仅选中者）：{artifacts.annotated_path(work)}")
@@ -138,6 +150,9 @@ def main(argv: list[str] | None = None) -> int:
     a.add_argument("--person", type=int, default=None,
                    help="直接指定 person 编号（跳过自动选人）")
     a.add_argument("--no-blur", action="store_true", help="关闭人脸打码（默认开）")
+    a.add_argument("--lifter", choices=("none", "motionbert"), default="none",
+                   help="三维提升模型（默认 none：只出二维报告；motionbert 需已"
+                        "放置权重与 torch，见 scripts/check_motionbert.py）")
     a.add_argument("--result-dir", type=Path, default=Path("results"), help="输出目录")
     a.add_argument("--refs", type=Path, default=DEFAULT_REFS,
                    help="参考区间表路径")
@@ -189,7 +204,8 @@ def main(argv: list[str] | None = None) -> int:
 
     opts = AnalyzeOptions(level=args.level, track_order=args.track_order,
                           blur=not args.no_blur, result_dir=args.result_dir,
-                          refs=args.refs, color=args.color, person=args.person)
+                          refs=args.refs, color=args.color, person=args.person,
+                          lifter=args.lifter)
 
     rc = 0
     for v in args.videos:

@@ -61,6 +61,7 @@ skibot/
 ├── trc_io.py         # trc 格式解析 + Halpe-26 重排
 ├── skeleton.py       # Halpe-26 布局契约：索引、别名、肢体链、conf 语义
 ├── skeleton3d.py     # 三维骨架契约（root-relative/重力/置信度）+ 提升适配器接口
+├── motionbert.py     # MotionBERT 三维提升适配器（issue 05）；mbmodel/ 为 vendored 模型定义
 ├── select_person.py  # 主轨迹选择（尺寸/位移/颜色打分）
 ├── view.py           # 视角分类：整视频判定 + 帧级归属（跟拍混合视角）
 ├── metrics.py        # 五项二维指标计算 + 指标注册表（支持帧级视角门控）
@@ -109,7 +110,9 @@ trc 反查连续滑行段。入口：`fetch_user_footage.py`、`fetch_channel_fo
 六项三维指标与辅助量已实现（`metrics3d.py`，issue 04），相位切分已实现
 （`phases.py`，issue 10），多机位拍手同步/标定/三角化离线工具已实现
 （`multiview.py`，issue 06）；评估流程传入 lifter（相位另需 fps）时同时
-产出二维与三维两套结果。真实 MotionBERT 适配器与三维参考带仍在后续票里；
-报告的 `phases` 对象在 issue 12。Web 侧任务表持久化（issue 17）、上传预检
-（issue 13）、报告页改选人物（issue 16）已完成，都不依赖三维口径。
+产出二维与三维两套结果。MotionBERT 提升适配器已接入（`motionbert.py`，
+issue 05：`skibot analyze --lifter motionbert` 开启，权重离线放
+`models/motionbert/`，torch 为可选依赖 `[lift3d]` extra）；三维参考带仍在
+后续票里；报告的 `phases` 对象在 issue 12。Web 侧任务表持久化（issue 17）、
+上传预检（issue 13）、报告页改选人物（issue 16）已完成，都不依赖三维口径。
 评分制仍不做。
